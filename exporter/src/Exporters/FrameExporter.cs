@@ -74,7 +74,7 @@ public class FrameExporter : BaseExporter
 		frameCpp = frameCpp.Replace("{{ LAYER_INIT }}", BuildLayers(frame));
 		frameCpp = frameCpp.Replace("{{ OBJECT_INSTANCES }}", BuildObjectInstances(frame));
 		frameCpp = frameCpp.Replace("{{ OBJECT_SELECTORS_INIT }}", BuildObjectSelectorsInit(frame));
-		frameCpp = frameCpp.Replace("{{ GROUP_ACTIVE }}", BuildGroupActive(frameIndex));
+		frameCpp = frameCpp.Replace("{{ GROUPS_FLAGS }}", BuildGroupActive(frameIndex));
 
 		_eventProcessor.PreProcessFrame(frameIndex);
 
@@ -193,17 +193,30 @@ public class FrameExporter : BaseExporter
 
 	private string BuildGroupActive(int frameIndex)
 	{
-		var groupActive = new StringBuilder();
-		for (int j = 0; j < MfaData.Frames[frameIndex].Events.Items.Count; j++)
+		var groupActiveFlags = new List<bool>();
+		var events = MfaData.Frames[frameIndex].Events.Items;
+
+		foreach (var evt in events)
 		{
-			var evt = MfaData.Frames[frameIndex].Events.Items[j];
 			if (evt.Conditions[0].ObjectType == -1 && evt.Conditions[0].Num == -10)
 			{
-				int groupId = (evt.Conditions[0].Items[0].Loader as Group).Id;
-				bool isActiveOnStart = !(evt.Conditions[0].Items[0].Loader as Group).Flags.GetFlag("InactiveOnStart");
-				groupActive.Append($"SetGroupActive({groupId}, {isActiveOnStart.ToString().ToLower()});\n");
+				Group groupLoader = evt.Conditions[0].Items[0].Loader as Group;
+				int groupId = groupLoader.Id;
+
+				while (groupActiveFlags.Count <= groupId)
+				{
+					groupActiveFlags.Add(false);
+				}
+
+				groupActiveFlags[groupId] = !groupLoader.Flags.GetFlag("InactiveOnStart");
 			}
 		}
-		return groupActive.ToString();
+
+		if (groupActiveFlags.Count > 0)
+		{
+			return string.Join(", ", groupActiveFlags.Select(b => b.ToString().ToLower()));
+		}
+
+		return "";
 	}
 }

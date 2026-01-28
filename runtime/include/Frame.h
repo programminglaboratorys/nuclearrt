@@ -28,7 +28,7 @@ public:
 	unsigned int MaxObjectInstanceHandle = 0;
 	
 	Timer GameTimer;
-
+	
 	bool IsGroupActive(unsigned int groupId) {
 		if (groupId < ActiveGroups.size()) {
 			return ActiveGroups[groupId];
@@ -123,9 +123,10 @@ public:
 	void RotatePoint(int& x, int& y, float angle);
 	bool IsPointOnLine(int x, int y, int x1, int y1, int x2, int y2);
 
+protected:
+	std::vector<bool> ActiveGroups;
 private:
 	std::vector<unsigned int> instancesMarkedForDeletion;
-	std::vector<bool> ActiveGroups;
 
 	int scrollX = 0;
 	int scrollY = 0;

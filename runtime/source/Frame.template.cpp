@@ -23,7 +23,7 @@ void GeneratedFrame{{ FRAME_INDEX }}::Initialize() {
 
 	{{ OBJECT_SELECTORS_INIT }}
 
-	{{ GROUP_ACTIVE }}
+	ActiveGroups = { {{ GROUPS_FLAGS }} };
 
 	Frame::PostInitialize();
 }
