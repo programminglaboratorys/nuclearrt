@@ -53,6 +53,8 @@ public:
 	short Random(short max);
 	short RandomRange(short min, short max);
 
+	float GetRawFrameTime() const { return rawFrameTime; }
+
 	Application();
 	~Application();
 	Application(const Application&) = delete;
@@ -68,6 +70,7 @@ private:
 
 	GameState currentState;
 	int newFrameIndex;
+	float rawFrameTime = 0.0f;
 	void RunState();
 
 	std::vector<ObjectGlobalData*> globalObjectData;

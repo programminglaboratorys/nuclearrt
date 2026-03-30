@@ -99,6 +99,7 @@ void DebugUI::RenderMetrics() {
 	
 	ImGui::Begin("Performance", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove);
 	ImGui::Text("Frame Time: %.3f ms", frameTime * 1000.0f);
+	ImGui::Text("Raw Frame Time: %.3f ms", Application::Instance().GetRawFrameTime() * 1000.0f);
 	ImGui::Text("FPS: %.1f", fps);
 	ImGui::End();
 }

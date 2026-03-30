@@ -15,6 +15,8 @@
 #include <emscripten.h>
 #endif
 
+#include <chrono>
+
 Application::Application() = default;
 Application::~Application() = default;
 
@@ -96,7 +98,11 @@ void Application::Run()
 		
 		frameStart = backend->GetTicks();
 		
+		auto loopStart = std::chrono::high_resolution_clock::now();
 		Loop();
+		auto loopEnd = std::chrono::high_resolution_clock::now();
+		
+		rawFrameTime = std::chrono::duration<float, std::chrono::seconds::period>(loopEnd - loopStart).count();
 		
 		frameTime = backend->GetTicks() - frameStart;
 		
