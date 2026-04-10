@@ -12,10 +12,25 @@ public class MouseIsOverObjectCondition : ConditionBase
 		StringBuilder result = new StringBuilder();
 
 		ParamObject obj = (ParamObject)eventBase.Items[0].Loader;
-		result.AppendLine($"for (ObjectIterator it(*{GetSelector(obj.ObjectInfo)}); !it.end(); ++it) {{");
-		result.AppendLine($"    {ifStatement} (IsColliding(&(**it), GetMouseX(), GetMouseY()))) it.deselect();");
-		result.AppendLine("}");
-		result.AppendLine($"if ({GetSelector(obj.ObjectInfo)}->Count() == 0) goto {nextLabel};");
+
+		if (ifStatement == "if (")
+		{
+			result.AppendLine("bool hasCollision = false;");
+			result.AppendLine($"for (ObjectIterator it(*{GetSelector(obj.ObjectInfo)}); !it.end(); ++it) {{");
+			result.AppendLine("    if (IsColliding(&(**it), GetMouseX(), GetMouseY())) {");
+			result.AppendLine("        hasCollision = true;");
+			result.AppendLine("        break;");
+			result.AppendLine("    }");
+			result.AppendLine("}");
+			result.AppendLine($"if (hasCollision) goto {nextLabel};");
+		}
+		else
+		{
+			result.AppendLine($"for (ObjectIterator it(*{GetSelector(obj.ObjectInfo)}); !it.end(); ++it) {{");
+			result.AppendLine($"    {ifStatement} IsColliding(&(**it), GetMouseX(), GetMouseY())) it.deselect();");
+			result.AppendLine("}");
+			result.AppendLine($"if ({GetSelector(obj.ObjectInfo)}->Count() == 0) goto {nextLabel};");
+		}
 
 		return result.ToString();
 	}
