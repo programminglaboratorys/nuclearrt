@@ -21,8 +21,9 @@ public class EventProcessor
 
 		foreach (var condition in evt.Conditions)
 		{
-			if (condition.IsOfType(new GroupStartCondition()) || condition.IsOfType(new GroupEndCondition()) || condition.IsOfType(new CommentCondition())) continue;
+			if (condition.IsOfType(new CommentCondition()) || condition.IsOfType(new GroupStartCondition()) || condition.IsOfType(new GroupEndCondition())) return true;
 		}
+
 		return false;
 	}
 
