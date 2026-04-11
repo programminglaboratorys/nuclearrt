@@ -176,16 +176,34 @@ void SDL3Backend::Initialize() {
 				for (auto& [handle, instance] : currentFrame->ObjectInstances) {					
 					if (ImGui::TreeNode(std::string(instance->Name + "##" + std::to_string(handle)).c_str())) {
 						ImGui::Text("Handle: %d", handle);
-						ImGui::Text("X: %d", instance->X);
-						ImGui::Text("Y: %d", instance->Y);
+						ImGui::Text("Position: %d, %d", instance->X, instance->Y);
+						ImGui::Text("Type: %d", instance->Type);
 
-						if (ImGui::TreeNode("OI")) {
-							ImGui::Text("Handle: %d", handle);
-							ImGui::Text("Type: %d", instance->Type);
-							ImGui::Text("RGB Coefficient: %d", instance->RGBCoefficient);
-							ImGui::Text("Effect: %d", instance->Effect);
-							ImGui::Text("Effect Parameter: %d", instance->GetEffectParameter());
-							ImGui::TreePop();
+						if (instance->Type == 2)
+						{
+							ImGui::Checkbox("Visible", &((Active*)instance)->Visible);
+						}
+						else if (instance->Type == 3)
+						{
+							ImGui::Checkbox("Visible", &((StringObject*)instance)->Visible);
+							
+							if (ImGui::TreeNode("Paragraphs")) {
+								ImGui::Text("Displayed Text: %s", ((StringObject*)instance)->GetText().c_str());
+								ImGui::Text("Alterable Text: %s", ((StringObject*)instance)->AlterableText.c_str());
+
+								if (ImGui::TreeNode("Paragraphs")) {
+									for (int i = 0; i < ((StringObject*)instance)->Paragraphs.size(); i++) {
+										ImGui::Text("Paragraph %d: %s", i, ((StringObject*)instance)->Paragraphs[i].Text.c_str());
+									}
+									ImGui::TreePop();
+								}
+
+								ImGui::TreePop();
+							}
+						}
+						else if (instance->Type == 7)
+						{
+							ImGui::Text("Value: %d", ((Counter*)instance)->GetValue());
 						}
 
 						ImGui::TreePop();
