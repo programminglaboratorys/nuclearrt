@@ -1331,6 +1331,10 @@ void SDL3Backend::UpdateSample() {
 // Sample End
 void SDL3Backend::GetKeyboardState(uint8_t* outBuffer)
 {
+#ifdef _DEBUG
+	if (ImGui::GetIO().WantCaptureKeyboard) return;
+#endif
+
 	//return the keyboard state in a new array which matches the Fusion key codes
 	const bool* keyboardState = SDL_GetKeyboardState(nullptr);
 	for (int i = 0; i < 256; i++)
@@ -1453,6 +1457,10 @@ int SDL3Backend::GetMouseWheelMove()
 
 uint32_t SDL3Backend::GetMouseState()
 {
+#ifdef _DEBUG
+	if (ImGui::GetIO().WantCaptureMouse) return 0;
+#endif
+
 	return SDL_GetMouseState(nullptr, nullptr);
 }
 
