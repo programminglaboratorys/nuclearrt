@@ -15,14 +15,16 @@ public class MouseIsOverObjectCondition : ConditionBase
 
 		if (ifStatement == "if (")
 		{
-			result.AppendLine("bool hasCollision = false;");
-			result.AppendLine($"for (ObjectIterator it(*{GetSelector(obj.ObjectInfo)}); !it.end(); ++it) {{");
-			result.AppendLine("    if (IsColliding(&(**it), GetMouseX(), GetMouseY())) {");
-			result.AppendLine("        hasCollision = true;");
-			result.AppendLine("        break;");
+			result.AppendLine("{");
+			result.AppendLine("    bool hasCollision = false;");
+			result.AppendLine($"    for (ObjectIterator it(*{GetSelector(obj.ObjectInfo)}); !it.end(); ++it) {{");
+			result.AppendLine("        if (IsColliding(&(**it), GetMouseX(), GetMouseY())) {");
+			result.AppendLine("            hasCollision = true;");
+			result.AppendLine("            break;");
+			result.AppendLine("        }");
 			result.AppendLine("    }");
+			result.AppendLine($"    if (hasCollision) goto {nextLabel};");
 			result.AppendLine("}");
-			result.AppendLine($"if (hasCollision) goto {nextLabel};");
 		}
 		else
 		{
