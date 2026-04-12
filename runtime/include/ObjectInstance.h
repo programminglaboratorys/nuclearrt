@@ -14,7 +14,7 @@ public:
     virtual ~ObjectInstance() = default;
     
     std::string Name = "";
-    std::vector<short> Qualifiers = { -1, -1, -1, -1, -1, -1, -1, -1 };
+    std::vector<short> Qualifiers = {};
     
     unsigned int Handle = 0;
     unsigned int Type = 0;

@@ -23,7 +23,7 @@ public:
 		for (const auto& [handle, instance] : allInstances) {
 			instance->isSelected = false; 
 			if (IsQualifier) {
-				for (int i = 0; i < 8; i++) {
+				for (int i = 0; i < instance->Qualifiers.size(); i++) {
 					if (instance->Qualifiers[i] == ObjectInfoId) {
 						AllSelectorObjectInstances.push_back(instance);
 						break;

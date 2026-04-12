@@ -103,7 +103,7 @@ public class ObjectInfoExporter : BaseExporter
 		{
 			if (objectInfo.properties is ObjectCommon common)
 			{
-				result.AppendLine($"instance->Qualifiers = {BuildQualifiers(common)};");
+				if (!common._qualifiers.All(q => q == -1)) result.AppendLine($"instance->Qualifiers = {BuildQualifiers(common)};");
 
 				// afaik their isn't a way to check if the object is global in the ccn's object info ( the preference flag does not change )
 				// this is probably terrible and might lead to incorrect results, but it's the best i can do for now
@@ -205,9 +205,11 @@ public class ObjectInfoExporter : BaseExporter
 		var result = new StringBuilder();
 
 		result.Append("std::vector<short>{");
-		foreach (var qualifier in common._qualifiers)
+		for (int i = 0; i < common._qualifiers.Length; i++)
 		{
-			result.Append($"{qualifier}, ");
+			if (common._qualifiers[i] == -1) continue;
+			result.Append($"{common._qualifiers[i]}");
+			if (i != common._qualifiers.Length - 1 && common._qualifiers[i + 1] != -1) result.Append(", ");
 		}
 		result.Append("}");
 
