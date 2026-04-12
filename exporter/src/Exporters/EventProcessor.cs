@@ -21,7 +21,7 @@ public class EventProcessor
 
 		foreach (var condition in evt.Conditions)
 		{
-			if (condition.IsOfType(new CommentCondition()) || condition.IsOfType(new GroupStartCondition()) || condition.IsOfType(new GroupEndCondition())) return true;
+			if (new CommentCondition().Equals(condition) || new GroupStartCondition().Equals(condition) || new GroupEndCondition().Equals(condition)) return true;
 		}
 
 		return false;
@@ -44,11 +44,11 @@ public class EventProcessor
 			// TODO: if a group is empty, don't include it.
 			if (ShouldSkipEvent(evt))
 			{
-				if (evt.Conditions[0].IsOfType(new GroupStartCondition())) //if this event is a group start, don't include it in the main event update loop
+				if (new GroupStartCondition().Equals(evt.Conditions[0])) //if this event is a group start, don't include it in the main event update loop
 				{
 					result.Append($"if (IsGroupActive({(evt.Conditions[0].Items[0].Loader as Group).Id})) {{\n");
 				}
-				else if (evt.Conditions[0].IsOfType(new GroupEndCondition())) //if this event is a group end, don't include it in the main event update loop, just close the current group
+				else if (new GroupEndCondition().Equals(evt.Conditions[0])) //if this event is a group end, don't include it in the main event update loop, just close the current group
 				{
 					result.Remove(result.Length - 1, 1); //Remove the last tab
 					result.Append("}\n");
@@ -204,7 +204,7 @@ public class EventProcessor
 
 				foreach (var condition in evt.Conditions)
 				{
-					if (!condition.IsOfType(new LoopCondition())) continue;
+					if (!new LoopCondition().Equals(condition)) continue;
 
 					string loopNameExpr = ExpressionConverter.ConvertExpression(condition.Items[0]?.Loader as ExpressionParameter);
 					result.AppendLine($"\tif (LoopNameEquals(loopName, {loopNameExpr})) Event_{j}();");
@@ -366,7 +366,7 @@ public class EventProcessor
 	{
 		foreach (var condition in evtGroup.Conditions)
 		{
-			if (condition.IsOfType(new LoopCondition())) return ExpressionConverter.ConvertExpression(condition.Items[0]?.Loader as ExpressionParameter).ToString() ?? "";
+			if (new LoopCondition().Equals(condition)) return ExpressionConverter.ConvertExpression(condition.Items[0]?.Loader as ExpressionParameter).ToString() ?? "";
 		}
 
 		return null;
@@ -376,7 +376,7 @@ public class EventProcessor
 	{
 		foreach (var condition in evtGroup.Conditions)
 		{
-			if (condition.IsOfType(new RunOnceCondition())) return true;
+			if (new RunOnceCondition().Equals(condition)) return true;
 		}
 
 		return false;
@@ -387,7 +387,7 @@ public class EventProcessor
 		int count = 0;
 		foreach (var condition in evtGroup.Conditions)
 		{
-			if (condition.IsOfType(new OrLogicalCondition())) count++;
+			if (new OrLogicalCondition().Equals(condition)) count++;
 		}
 
 		return count;
@@ -426,7 +426,7 @@ public class EventProcessor
 	{
 		foreach (var condition in evtGroup.Conditions)
 		{
-			if (condition.IsOfType(new OneActionLoopCondition())) return true;
+			if (new OneActionLoopCondition().Equals(condition)) return true;
 		}
 
 		return false;
@@ -451,10 +451,10 @@ public class EventProcessor
 		// TODO: Verify if any other conditions should be considered a timer event, I got these from 2006 documentation: https://www.clickteam.com/creation_materials/tutorials/download/Fusion_runtime.pdf
 		foreach (var condition in evtGroup.Conditions)
 		{
-			if (condition.IsOfType(new StartOfFrameCondition())
-				|| condition.IsOfType(new TimerComparisonLessThanCondition())
-				|| condition.IsOfType(new TimerComparisonGreaterThanCondition())
-				|| condition.IsOfType(new TimerComparisonEqualToCondition()))
+			if (new StartOfFrameCondition().Equals(condition)
+				|| new TimerComparisonLessThanCondition().Equals(condition)
+				|| new TimerComparisonGreaterThanCondition().Equals(condition)
+				|| new TimerComparisonEqualToCondition().Equals(condition))
 			{
 				return true;
 			}

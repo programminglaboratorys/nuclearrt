@@ -17,4 +17,14 @@ public class ACBase
 	{
 		return ExpressionConverter.GetSelector(objectInfo, IsGlobal);
 	}
+
+	public override bool Equals(object? obj)
+	{
+		if (obj.GetType().IsSubclassOf(typeof(EventBase)))
+		{
+			EventBase eventBase = obj as EventBase;
+			return eventBase.ObjectType == ObjectType && eventBase.Num == Num;
+		}
+		return base.Equals(obj);
+	}
 }

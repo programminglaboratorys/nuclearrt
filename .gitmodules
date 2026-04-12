@@ -1,0 +1,3 @@
+[submodule "exporter/src/CTFAK-Nuclear"]
+	path = exporter/src/CTFAK-Nuclear
+	url = https://github.com/nuclearrt/CTFAK-Nuclear
