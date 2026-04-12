@@ -170,33 +170,27 @@ else()
     )
 endif()
 
-# Copy assets.pak to build directory
-set(ASSETS_SOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/assets.pak")
+# Copy directory setup
+set(COPY_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/copy")
+set(ASSETS_SOURCE_FILE "${COPY_SOURCE_DIR}/assets.pak")
 
-# Set assets destination based on platform
+# Set output destination based on platform
 if(APPLE AND NOT EMSCRIPTEN)
-    set(ASSETS_DEST_FILE "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}>/Contents/Resources/assets.pak")
+    set(COPY_DEST_DIR "$<TARGET_BUNDLE_DIR:${PROJECT_NAME}>/Contents/Resources")
 elseif(MSVC)
-    set(ASSETS_DEST_FILE "${CMAKE_BINARY_DIR}/bin/$<CONFIG>/assets.pak")
+    set(COPY_DEST_DIR "${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
 else()
-    set(ASSETS_DEST_FILE "${CMAKE_BINARY_DIR}/bin/assets.pak")
+    set(COPY_DEST_DIR "${CMAKE_BINARY_DIR}/bin")
 endif()
 
-# Check if assets.pak exists and copy it
-if(EXISTS ${ASSETS_SOURCE_FILE} AND NOT EMSCRIPTEN)
-    # Create a custom command to copy assets after build
+if(NOT EMSCRIPTEN)
     add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy
-        ${ASSETS_SOURCE_FILE} ${ASSETS_DEST_FILE}
-        COMMENT "Copying assets.pak to build directory"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${COPY_SOURCE_DIR} ${COPY_DEST_DIR}
+        COMMENT "Copying files from copy directory to build output"
     )
-    message(STATUS "assets.pak will be copied from ${ASSETS_SOURCE_FILE} to ${ASSETS_DEST_FILE}")
 else()
-    message(WARNING "assets.pak not found at ${ASSETS_SOURCE_FILE}")
-endif()
-
-if(EMSCRIPTEN)
     target_link_options(${PROJECT_NAME} PRIVATE --embed-file ${ASSETS_SOURCE_FILE}@assets.pak)
 endif()
 
