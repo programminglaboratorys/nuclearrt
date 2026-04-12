@@ -1,15 +1,17 @@
 #pragma once
 
-#include "ObjectInstance.h"
-#include "ObjectFactory.h"
-#include "ObjectSelector.h"
-#include "Timer.h"
-#include <vector>
-#include <memory>
 #include <algorithm>
 #include <cctype>
-#include "Layer.h"
+#include <cmath>
+#include <memory>
+#include <vector>
+
 #include "CounterBase.h"
+#include "Layer.h"
+#include "ObjectFactory.h"
+#include "ObjectInstance.h"
+#include "ObjectSelector.h"
+#include "Timer.h"
 
 class Frame {
 public:
