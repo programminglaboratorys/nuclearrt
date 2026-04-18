@@ -13,7 +13,8 @@ public static class ExtensionExporterRegistry
 	{
 		new ButtonObjectExporter(),
 		new IniExporter(),
-		new LayerObjectExporter()
+		new LayerObjectExporter(),
+		new GlobalStoreXExporter()
 	};
 
 	public static ExtensionExporter GetExporter(string extensionName)
