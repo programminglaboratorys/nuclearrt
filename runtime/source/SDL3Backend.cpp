@@ -120,6 +120,13 @@ void SDL3Backend::Initialize() {
 		return;
 	}
 
+	if (Application::Instance().GetAppData()->GetAntiAliasingWhenResizing()) {
+		SDL_SetTextureScaleMode(renderTarget, SDL_SCALEMODE_LINEAR);
+	}
+	else {
+		SDL_SetTextureScaleMode(renderTarget, SDL_SCALEMODE_NEAREST);
+	}
+
 	//load assets
 	if (!pakFile.Load(GetAssetsFileName())) {
 		std::cerr << "PakFile::Load Error: " << "Failed to load assets file" << std::endl;
@@ -378,6 +385,13 @@ void SDL3Backend::BeginDrawing()
 		renderTarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_TARGET, newWidth, newHeight);
 		if (renderTarget == nullptr) {
 			std::cerr << "SDL_CreateTexture Error (resize): " << SDL_GetError() << std::endl;
+		}
+
+		if (Application::Instance().GetAppData()->GetAntiAliasingWhenResizing()) {
+			SDL_SetTextureScaleMode(renderTarget, SDL_SCALEMODE_LINEAR);
+		}
+		else {
+			SDL_SetTextureScaleMode(renderTarget, SDL_SCALEMODE_NEAREST);
 		}
 	}
 	
