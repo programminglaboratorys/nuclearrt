@@ -70,11 +70,17 @@ public class GlobalStoreXExporter : ExtensionExporter
 			case 82: // Set String
 				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo)}->SetString({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)});");
 				break;
+			case 83: // Add Integer
+				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo)}->AddInteger({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)});");
+				break;
 			case 84: // Set Bool Range
 				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo)}->SetRangeBool({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[2].Loader, eventBase)});");
 				break;
 			case 85: // Add String
 				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo)}->AddString({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)});");
+				break;
+			case 86: // Subtract Integer
+				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo)}->SubtractInteger({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)});");
 				break;
 			case 87: // Clear Bools
 				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo)}->ClearBools();");
