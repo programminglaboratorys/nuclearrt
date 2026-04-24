@@ -795,6 +795,10 @@ void SDL3Backend::UnloadFont(int id)
 
 void SDL3Backend::DrawText(FontInfo* fontInfo, int x, int y, int color, const std::string& text, int objectHandle)
 {
+	if (fontInfo == nullptr) {
+		return;
+	}
+	
 	if (fonts.find(fontInfo->Handle) == fonts.end()) {
 		return;
 	}
