@@ -73,6 +73,7 @@ public class EventProcessor
 			int numberOfOrConditions = NumberOfOrConditions(evt);
 			int orConditionIndex = 0;
 			string nextLabel = GenerateEventNextLabel(evt, numberOfOrConditions);
+			string idName = GetEventBaseName(evt);
 
 			List<Tuple<int, string>> usedSelectors = new List<Tuple<int, string>>(); // if a selector has already been reset during this event, don't reset it again
 
@@ -108,6 +109,7 @@ public class EventProcessor
 				Dictionary<string, object> parameters = new Dictionary<string, object>()
 				{
 					{ "eventIndex", j },
+					{ "eventBaseName", idName }, // used for labels
 					{ "frameIndex", frameIndex },
 					{ "eventGroup", evt },
 					{ "numOfOrs", numberOfOrConditions }
@@ -119,7 +121,6 @@ public class EventProcessor
 				result.AppendLine(instance?.Build(condition, ref nextLabel, ref orConditionIndex, parameters, ifStatement));
 			}
 
-			string idName = GetEventBaseName(evt);
 			string endLabel = $"{idName}_end";
 			result.AppendLine($"{idName}_actions:;");
 
@@ -492,17 +493,17 @@ public class EventProcessor
 		}
 	}
 	// utilities
-	string GetEventBaseName(EventGroup evt)
+	public static string GetEventBaseName(EventGroup evt)
 	{
 		return $"event{(evt.IsGlobal ? "_global" : "")}_{evt.Identifier}";
 	}
 
-	string GetEventName(EventGroup evt)
+	public static string GetEventName(EventGroup evt)
 	{
 		return $"Event{(evt.IsGlobal ? "_Global" : "")}_{evt.Identifier}";
 	}
 
-	string GenerateEventNextLabel(EventGroup evt, int orConditionIndex = 0)
+	public static string GenerateEventNextLabel(EventGroup evt, int orConditionIndex = 0)
 	{
 		string suffix = orConditionIndex > 0 ? $"_or_{orConditionIndex}" : "_end";
 		return $"{GetEventBaseName(evt)}{suffix}";
