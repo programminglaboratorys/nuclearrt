@@ -120,6 +120,13 @@ void SDL3Backend::Initialize() {
 		return;
 	}
 
+	if (Application::Instance().GetAppData()->GetAntiAliasingWhenResizing()) {
+		SDL_SetTextureScaleMode(renderTarget, SDL_SCALEMODE_LINEAR);
+	}
+	else {
+		SDL_SetTextureScaleMode(renderTarget, SDL_SCALEMODE_NEAREST);
+	}
+
 	//load assets
 	if (!pakFile.Load(GetAssetsFileName())) {
 		std::cerr << "PakFile::Load Error: " << "Failed to load assets file" << std::endl;
@@ -176,16 +183,34 @@ void SDL3Backend::Initialize() {
 				for (auto& [handle, instance] : currentFrame->ObjectInstances) {					
 					if (ImGui::TreeNode(std::string(instance->Name + "##" + std::to_string(handle)).c_str())) {
 						ImGui::Text("Handle: %d", handle);
-						ImGui::Text("X: %d", instance->X);
-						ImGui::Text("Y: %d", instance->Y);
+						ImGui::Text("Position: %d, %d", instance->X, instance->Y);
+						ImGui::Text("Type: %d", instance->Type);
 
-						if (ImGui::TreeNode("OI")) {
-							ImGui::Text("Handle: %d", handle);
-							ImGui::Text("Type: %d", instance->Type);
-							ImGui::Text("RGB Coefficient: %d", instance->RGBCoefficient);
-							ImGui::Text("Effect: %d", instance->Effect);
-							ImGui::Text("Effect Parameter: %d", instance->GetEffectParameter());
-							ImGui::TreePop();
+						if (instance->Type == 2)
+						{
+							ImGui::Checkbox("Visible", &((Active*)instance)->Visible);
+						}
+						else if (instance->Type == 3)
+						{
+							ImGui::Checkbox("Visible", &((StringObject*)instance)->Visible);
+							
+							if (ImGui::TreeNode("Paragraphs")) {
+								ImGui::Text("Displayed Text: %s", ((StringObject*)instance)->GetText().c_str());
+								ImGui::Text("Alterable Text: %s", ((StringObject*)instance)->AlterableText.c_str());
+
+								if (ImGui::TreeNode("Paragraphs")) {
+									for (int i = 0; i < ((StringObject*)instance)->Paragraphs.size(); i++) {
+										ImGui::Text("Paragraph %d: %s", i, ((StringObject*)instance)->Paragraphs[i].Text.c_str());
+									}
+									ImGui::TreePop();
+								}
+
+								ImGui::TreePop();
+							}
+						}
+						else if (instance->Type == 7)
+						{
+							ImGui::Text("Value: %d", ((Counter*)instance)->GetValue());
 						}
 
 						ImGui::TreePop();
@@ -360,6 +385,13 @@ void SDL3Backend::BeginDrawing()
 		renderTarget = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_XRGB8888, SDL_TEXTUREACCESS_TARGET, newWidth, newHeight);
 		if (renderTarget == nullptr) {
 			std::cerr << "SDL_CreateTexture Error (resize): " << SDL_GetError() << std::endl;
+		}
+
+		if (Application::Instance().GetAppData()->GetAntiAliasingWhenResizing()) {
+			SDL_SetTextureScaleMode(renderTarget, SDL_SCALEMODE_LINEAR);
+		}
+		else {
+			SDL_SetTextureScaleMode(renderTarget, SDL_SCALEMODE_NEAREST);
 		}
 	}
 	
@@ -1331,6 +1363,10 @@ void SDL3Backend::UpdateSample() {
 // Sample End
 void SDL3Backend::GetKeyboardState(uint8_t* outBuffer)
 {
+#ifdef _DEBUG
+	if (DEBUG_UI.IsEnabled() && ImGui::GetIO().WantCaptureKeyboard) return;
+#endif
+
 	//return the keyboard state in a new array which matches the Fusion key codes
 	const bool* keyboardState = SDL_GetKeyboardState(nullptr);
 	for (int i = 0; i < 256; i++)
@@ -1453,6 +1489,10 @@ int SDL3Backend::GetMouseWheelMove()
 
 uint32_t SDL3Backend::GetMouseState()
 {
+#ifdef _DEBUG
+	if (DEBUG_UI.IsEnabled() && ImGui::GetIO().WantCaptureMouse) return 0;
+#endif
+
 	return SDL_GetMouseState(nullptr, nullptr);
 }
 

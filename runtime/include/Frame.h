@@ -1,13 +1,17 @@
 #pragma once
 
-#include "ObjectInstance.h"
+#include <algorithm>
+#include <cctype>
+#include <cmath>
+#include <memory>
+#include <vector>
+
+#include "CounterBase.h"
+#include "Layer.h"
 #include "ObjectFactory.h"
+#include "ObjectInstance.h"
 #include "ObjectSelector.h"
 #include "Timer.h"
-#include <vector>
-#include <memory>
-#include "Layer.h"
-#include "CounterBase.h"
 
 class Frame {
 public:
@@ -192,10 +196,57 @@ public:
 		return ODistance(*(selector->begin()), xTarget, yTarget);
 	}
 
-	int Loopindex(std::string loopName) {
-		//TODO: loopindex will return 0 untul the loop system can support expressions
+	struct LoopState {
+		bool running = false;
+		int index = 0;
+	};
+
+	static std::string ToLowerStr(const std::string& str) {
+		std::string result = str;
+		std::transform(result.begin(), result.end(), result.begin(),
+			[](unsigned char c) { return std::tolower(c); });
+		return result;
+	}
+
+	static bool LoopNameEquals(const std::string& a, const std::string& b) {
+		if (a.size() != b.size()) return false;
+		for (size_t i = 0; i < a.size(); i++) {
+			if (std::tolower(static_cast<unsigned char>(a[i])) !=
+				std::tolower(static_cast<unsigned char>(b[i])))
+				return false;
+		}
+		return true;
+	}
+
+	void StartLoop(const std::string& name, int count) {
+		std::string key = ToLowerStr(name);
+		activeLoops[key] = {true, 0};
+		while (activeLoops[key].running && activeLoops[key].index < count) {
+			OnLoop(name);
+			if (!activeLoops[key].running) break;
+			activeLoops[key].index++;
+		}
+		activeLoops.erase(key);
+	}
+
+	void StopLoop(const std::string& name) {
+		std::string key = ToLowerStr(name);
+		auto it = activeLoops.find(key);
+		if (it != activeLoops.end()) {
+			it->second.running = false;
+		}
+	}
+
+	int Loopindex(const std::string& loopName) {
+		std::string key = ToLowerStr(loopName);
+		auto it = activeLoops.find(key);
+		if (it != activeLoops.end()) {
+			return it->second.index;
+		}
 		return 0;
 	}
+
+	virtual void OnLoop(const std::string& loopName) {}
 
 	//Collision detection
 	bool IsCollidingWithBackground(ObjectInstance* instance);
@@ -207,6 +258,7 @@ public:
 private:
 	std::vector<unsigned int> instancesMarkedForDeletion;
 	std::vector<bool> ActiveGroups;
+	std::unordered_map<std::string, LoopState> activeLoops;
 
 	int scrollX = 0;
 	int scrollY = 0;

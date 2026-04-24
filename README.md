@@ -67,7 +67,7 @@ Contributions are welcome! Please open an issue or pull request to contribute.
 
 ## License
 
-This project is licensed under the GPL-3.0 license. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the AGPL-3.0 license. See the [LICENSE](LICENSE) file for details.
 
 ## Credits
 
