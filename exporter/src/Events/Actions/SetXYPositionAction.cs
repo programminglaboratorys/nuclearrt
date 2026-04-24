@@ -24,3 +24,13 @@ public class SetYPositionAction : SetXPositionAction
 {
 	public override int Num { get; set; } = 3;
 }
+
+public class SetXPositionActionString : SetXPositionAction
+{
+	public override int ObjectType { get; set; } = 3;
+}
+
+public class SetYPositionActionString : SetYPositionAction
+{
+	public override int ObjectType { get; set; } = 3;
+}

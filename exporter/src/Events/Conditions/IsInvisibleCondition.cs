@@ -12,7 +12,7 @@ public class IsInvisibleCondition : ConditionBase
 
 		result.AppendLine($"for (ObjectIterator it(*{GetSelector(eventBase.ObjectInfo)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");
-		result.AppendLine($"    {ifStatement} (!((Active*)instance)->Visible)) it.deselect();");
+		result.AppendLine($"    {ifStatement} (!(({ExpressionConverter.GetObjectClassName(eventBase.ObjectInfo, IsGlobal)}*)instance)->Visible)) it.deselect();");
 		result.AppendLine("}");
 
 		//If no instances are selected, we go to the end label
@@ -20,4 +20,9 @@ public class IsInvisibleCondition : ConditionBase
 
 		return result.ToString();
 	}
+}
+
+public class IsInvisibleConditionString : IsInvisibleCondition
+{
+	public override int ObjectType { get; set; } = 3;
 }
