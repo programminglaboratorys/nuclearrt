@@ -22,7 +22,7 @@ public class EventProcessor
 		for (int j = 0; j < _exporter.MfaData.Frames[frameIndex].Events.Items.Count; j++)
 		{
 			var evt = _exporter.MfaData.Frames[frameIndex].Events.Items[j];
-			string eventName = $"Event_{evt.Identifier}";
+			string eventName = GetEventName(evt);
 
 			for (int k = 0; k < evt.RestrictCpt; k++) //TODO: check if this is correct
 			{
@@ -62,7 +62,7 @@ public class EventProcessor
 
 			if (evt.Conditions[0].IsOfType(new GroupStartCondition()) || evt.Conditions[0].IsOfType(new GroupEndCondition()) || evt.Conditions[0].IsOfType(new CommentCondition())) continue; //if this event is a group start or end, don't include it in the event includes
 
-			result.AppendLine($"void GeneratedFrame{frameIndex}::Event_{evt.Identifier}()");
+			result.AppendLine($"void GeneratedFrame{frameIndex}::{GetEventName(evt)}()");
 			result.AppendLine("{");
 
 			if (DoesEventHaveOneActionLoop(evt))
@@ -70,11 +70,9 @@ public class EventProcessor
 				result.AppendLine($"bool allConditionsMet = false;");
 			}
 
-			string nextLabel = $"event_{j}_end";
-
 			int numberOfOrConditions = NumberOfOrConditions(evt);
 			int orConditionIndex = 0;
-			if (numberOfOrConditions > 0) nextLabel = $"event_{j}_or_{orConditionIndex}";
+			string nextLabel = GenerateEventNextLabel(evt, numberOfOrConditions);
 
 			List<Tuple<int, string>> usedSelectors = new List<Tuple<int, string>>(); // if a selector has already been reset during this event, don't reset it again
 
@@ -121,13 +119,15 @@ public class EventProcessor
 				result.AppendLine(instance?.Build(condition, ref nextLabel, ref orConditionIndex, parameters, ifStatement));
 			}
 
-			result.AppendLine($"event_{j}_actions:;");
+			string idName = GetEventBaseName(evt);
+			string endLabel = $"{idName}_end";
+			result.AppendLine($"{idName}_actions:;");
 
 			if (DoesEventHaveOneActionLoop(evt))
 			{
 				result.AppendLine($"allConditionsMet = true;");
-				result.AppendLine($"if (event_{j}_actions_executed_last_frame) goto event_{j}_end;");
-				result.AppendLine($"event_{j}_actions_executed_last_frame = true;");
+				result.AppendLine($"if ({idName}_actions_executed_last_frame) goto {endLabel};");
+				result.AppendLine($"{idName}_actions_executed_last_frame = true;");
 			}
 
 			foreach (var action in evt.Actions)
@@ -171,11 +171,12 @@ public class EventProcessor
 				result.AppendLine(instance?.Build(action, ref nextLabel, ref orConditionIndex, parameters, ""));
 			}
 
-			result.AppendLine($"event_{j}_end:;");
+			result.AppendLine($"{endLabel}:;");
 
 			if (DoesEventHaveOneActionLoop(evt))
 			{
-				result.AppendLine($"if (!allConditionsMet) event_{j}_actions_executed_last_frame = false;");
+				string eventBaseName = GetEventBaseName(evt);
+				result.AppendLine($"if (!allConditionsMet) {eventBaseName}_actions_executed_last_frame = false;");
 			}
 
 			result.AppendLine("}");
@@ -201,7 +202,7 @@ public class EventProcessor
 					if (loopNameSanitized == loopName)
 					{
 						//TODO: Check if group is active?
-						result.AppendLine($"\tEvent_{evt.Identifier}();");
+						result.AppendLine($"\t{GetEventName(evt)}();");
 					}
 				}
 			}
@@ -334,7 +335,7 @@ public class EventProcessor
 
 			if (evt.Conditions[0].IsOfType(new GroupStartCondition()) || evt.Conditions[0].IsOfType(new GroupEndCondition()) || evt.Conditions[0].IsOfType(new CommentCondition())) continue; //if this event is a group start or end, don't include it in the event includes
 
-			result.AppendLine($"void Event_{evt.Identifier}();");
+			result.AppendLine($"void {GetEventName(evt)}();");
 		}
 
 		return result.ToString();
@@ -411,7 +412,11 @@ public class EventProcessor
 		for (int i = 0; i < _exporter.MfaData.Frames[frameIndex].Events.Items.Count; i++)
 		{
 			var evt = _exporter.MfaData.Frames[frameIndex].Events.Items[i];
-			if (DoesEventHaveRunOnce(evt)) result.AppendLine($"bool event_{i}_run_once = false;");
+			if (DoesEventHaveRunOnce(evt))
+			{
+				string idName = GetEventBaseName(evt);
+				result.AppendLine($"bool {idName}_run_once = false;");
+			}
 		}
 
 		return result.ToString();
@@ -434,7 +439,11 @@ public class EventProcessor
 		for (int i = 0; i < _exporter.MfaData.Frames[frameIndex].Events.Items.Count; i++)
 		{
 			var evt = _exporter.MfaData.Frames[frameIndex].Events.Items[i];
-			if (DoesEventHaveOneActionLoop(evt)) result.AppendLine($"bool event_{i}_actions_executed_last_frame = false;");
+			if (DoesEventHaveOneActionLoop(evt))
+			{
+				string idName = GetEventBaseName(evt);
+				result.AppendLine($"bool {idName}_actions_executed_last_frame = false;");
+			}
 		}
 
 		return result.ToString();
@@ -481,5 +490,21 @@ public class EventProcessor
 			evt.IsGlobal = true;
 			frame.Events.Items.Add(evt);
 		}
+	}
+	// utilities
+	string GetEventBaseName(EventGroup evt)
+	{
+		return $"event{(evt.IsGlobal ? "_global" : "")}_{evt.Identifier}";
+	}
+
+	string GetEventName(EventGroup evt)
+	{
+		return $"Event{(evt.IsGlobal ? "_Global" : "")}_{evt.Identifier}";
+	}
+
+	string GenerateEventNextLabel(EventGroup evt, int orConditionIndex = 0)
+	{
+		string suffix = orConditionIndex > 0 ? $"_or_{orConditionIndex}" : "_end";
+		return $"{GetEventBaseName(evt)}{suffix}";
 	}
 }
