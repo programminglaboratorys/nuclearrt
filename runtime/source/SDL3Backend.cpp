@@ -1300,19 +1300,25 @@ int SDL3Backend::GetSampleFreq(int id, bool channel) {
 	}
 	return 0;
 }
-int SDL3Backend::GetSampleVolume(int id, bool channel) {
-	if (id == -1 && !channel) return mainVol;
-	if (channel) { // Get Channel Volume
-		if (id < 1 || id >= SDL_arraysize(channels)) return -1;
-		return channels[id].volume;
-	}
-	if (id > -1 && !channel) { // Get Sample Volume
+int SDL3Backend::GetSampleVolume(int id) {
+	if (id == -1) return mainVol;
+	if (id > -1) { // Get Sample Volume
 		for (int i = 1; i < SDL_arraysize(channels); i++) {
 			if (channels[i].curHandle == id && channels[i].stream) return channels[i].volume;
 		}
 	}
 	return 0;
 }
+
+int SDL3Backend::GetSampleVolume(std::string name) {
+	return GetSampleVolume(FindSample(name));
+}
+
+int SDL3Backend::GetChannelVolume(int id) {
+	if (id < 1 || id >= SDL_arraysize(channels)) return -1;
+	return channels[id].volume;
+}
+
 void SDL3Backend::StopSample(int id, bool channel) {
 	if (id == -1) { // Stop any sample
 		for (int i = 1; i < SDL_arraysize(channels); i++) {

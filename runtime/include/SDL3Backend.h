@@ -78,7 +78,9 @@ public:
 	void UpdateSample() override;
 	void PauseSample(int id, bool channel, bool pause) override;
 	bool SampleState(int id, bool channel, bool pauseOrStop) override;
-	int GetSampleVolume(int id, bool channel) override;
+	int GetSampleVolume(int id) override;
+	int GetSampleVolume(std::string name) override;
+	int GetChannelVolume(int id) override;
 	std::string GetChannelName(int channel) override {return channels[channel].name;}
 	void SetSampleVolume(float volume, int id, bool channel) override;
 	void LockChannel(int channel, bool unlock) override {if (unlock) channels[channel].lock = false; else channels[channel].lock = true;}

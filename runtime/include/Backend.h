@@ -54,7 +54,9 @@ public:
 	virtual void StopSample(int id, bool channel) {}
 	virtual void PauseSample(int id, bool channel, bool pause) {}
 	virtual void SetSampleVolume(float volume, int id, bool channel) {}
-	virtual int GetSampleVolume(int id, bool channel) {return 0;}
+	virtual int GetSampleVolume(int id) {return 0;}
+	virtual int GetSampleVolume(std::string name) {return 0;}
+	virtual int GetChannelVolume(int id) {return 0;}
 	virtual std::string GetChannelName(int channel) {return "";}
 	virtual void LockChannel(int channel, bool unlock) {}
 	virtual void SetSamplePan(float pan, int id, bool channel) {}
