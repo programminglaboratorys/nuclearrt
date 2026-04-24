@@ -99,10 +99,10 @@ public class ExpressionConverter
         { (ObjectType.System, 3),  e => $"std::string(\"{e.Loader.ToString()}\")" },
 		{ (ObjectType.System, 4),  _ => $"std::to_string(" }, // Str$
 		{ (ObjectType.System, 5),  _ => $"MathHelper::Stoi(" }, // Val(
-        { (ObjectType.System, 6),  _ => "\"\"" }, // Appdrive$ // TODO
-        { (ObjectType.System, 7),  _ => "\"\"" }, // Appdir$ // TODO
-        { (ObjectType.System, 8),  _ => "\"\"" }, // Apppath$ // TODO
-        { (ObjectType.System, 9),  _ => "\"\"" }, // Appname$ // TODO
+        { (ObjectType.System, 6),  _ => "std::string(\"\")" }, // Appdrive$ // TODO
+        { (ObjectType.System, 7),  _ => "std::string(\"\")" }, // Appdir$ // TODO
+        { (ObjectType.System, 8),  _ => "std::string(\"\")" }, // Apppath$ // TODO
+        { (ObjectType.System, 9),  _ => "std::string(\"\")" }, // Appname$ // TODO
 		{ (ObjectType.System, 13),  _ => "std::sqrt(" }, // Square Root
         { (ObjectType.System, 19), _ => "StringLeft(" }, // String Left
         { (ObjectType.System, 20), _ => "StringRight(" }, // String Right
@@ -114,7 +114,7 @@ public class ExpressionConverter
         { (ObjectType.System, 46), _ => "Loopindex(" }, // LoopIndex
 		{ (ObjectType.System, 48), _ => "std::round(" }, // Round
 		{ (ObjectType.System, 50), e => $"Application::Instance().GetAppData()->GetGlobalString({GetGlobalValueIndex(e.Loader as GlobalCommon)})" },
-		{ (ObjectType.System, 56), _ => "\"\"" }, // AppTempPath$ // TODO
+		{ (ObjectType.System, 56), _ => "std::string(\"\")" }, // AppTempPath$ // TODO
         { (ObjectType.System, 65), _ => "Application::Instance().RandomRange(" }, // RRandom
         { (ObjectType.System, 67), _ => "Application::Instance().GetBackend()->GetPlatformName()" }, // RuntimeName$
 

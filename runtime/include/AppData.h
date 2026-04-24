@@ -35,6 +35,9 @@ public:
 	bool& GetResizeDisplay() { return m_resizeDisplay; }
 	void SetResizeDisplay(bool resize) { m_resizeDisplay = resize; }
 
+	bool& GetAntiAliasingWhenResizing() { return m_antiAliasingWhenResizing; }
+	void SetAntiAliasingWhenResizing(bool antiAliasing) { m_antiAliasingWhenResizing = antiAliasing; }
+
 	bool& GetDontCenterFrame() { return m_dontCenterFrame; }
 	void SetDontCenterFrame(bool dontCenter) { m_dontCenterFrame = dontCenter; }
 	bool& GetSampleOverFrame() { return m_sampleOverFrame; }
@@ -152,6 +155,7 @@ private:
 	int m_borderColor = 0;
 	bool m_fitInside = false;
 	bool m_resizeDisplay = false;
+	bool m_antiAliasingWhenResizing = false;
 	bool m_dontCenterFrame = false;
 	bool m_sampleOverFrame = false;
 	bool m_multiSamples = true;

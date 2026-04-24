@@ -11,6 +11,7 @@ void AppData::Initialize()
 	m_fitInside = {{ fit_inside }};
 	m_resizeDisplay = {{ resize_display }};
 	m_dontCenterFrame = {{ dont_center_frame }};
+	m_antiAliasingWhenResizing = {{ anti_aliasing_when_resizing }};
 	m_sampleOverFrame = {{ sample_over_frame }};
 	m_multiSamples = {{ multi_samples }};
 	m_sampleFocus = {{ sample_unfocused }};

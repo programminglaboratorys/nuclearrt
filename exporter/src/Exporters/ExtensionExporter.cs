@@ -12,7 +12,9 @@ public static class ExtensionExporterRegistry
 	private static readonly List<ExtensionExporter> exporters = new List<ExtensionExporter>
 	{
 		new ButtonObjectExporter(),
-		new IniExporter()
+		new IniExporter(),
+		new LayerObjectExporter(),
+		new GlobalStoreXExporter()
 	};
 
 	public static ExtensionExporter GetExporter(string extensionName)

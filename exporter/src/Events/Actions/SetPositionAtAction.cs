@@ -34,3 +34,8 @@ public class SetPositionAtAction : ActionBase
 		return result.ToString();
 	}
 }
+
+public class SetPositionAtActionString : SetPositionAtAction
+{
+	public override int ObjectType { get; set; } = 3;
+}

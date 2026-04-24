@@ -94,7 +94,7 @@ public class PakBuilder
 		}
 
 		//create quake pak file
-		using var pak = File.Create(outputPath + "/assets.pak");
+		using var pak = File.Create(outputPath + "/copy/assets.pak");
 		using var writer = new ByteWriter(pak);
 
 		//write header

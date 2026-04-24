@@ -12,10 +12,20 @@ public class MouseIsOverObjectCondition : ConditionBase
 		StringBuilder result = new StringBuilder();
 
 		ParamObject obj = (ParamObject)eventBase.Items[0].Loader;
-		result.AppendLine($"for (ObjectIterator it(*{GetSelector(obj.ObjectInfo)}); !it.end(); ++it) {{");
-		result.AppendLine($"    {ifStatement} (IsColliding(&(**it), GetMouseX(), GetMouseY()))) it.deselect();");
-		result.AppendLine("}");
-		result.AppendLine($"if ({GetSelector(obj.ObjectInfo)}->Count() == 0) goto {nextLabel};");
+
+		if (ifStatement == "if (")
+		{
+			result.AppendLine($"for (ObjectIterator it(*{GetSelector(obj.ObjectInfo)}); !it.end(); ++it) {{");
+			result.AppendLine($"    {ifStatement} IsColliding(&(**it), GetMouseX(), GetMouseY())) goto {nextLabel};");
+			result.AppendLine("}");
+		}
+		else
+		{
+			result.AppendLine($"for (ObjectIterator it(*{GetSelector(obj.ObjectInfo)}); !it.end(); ++it) {{");
+			result.AppendLine($"    {ifStatement} IsColliding(&(**it), GetMouseX(), GetMouseY())) it.deselect();");
+			result.AppendLine("}");
+			result.AppendLine($"if ({GetSelector(obj.ObjectInfo)}->Count() == 0) goto {nextLabel};");
+		}
 
 		return result.ToString();
 	}
