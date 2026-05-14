@@ -500,12 +500,12 @@ public class EventProcessor
 	// utilities
 	public static string GetEventBaseName(EventGroup evt)
 	{
-		return $"event{(evt.IsGlobal ? "_global" : "")}_{evt.Identifier}";
+		return $"{(evt.IsGlobal ? "global_" : "")}event_{evt.Identifier}";
 	}
 
 	public static string GetEventName(EventGroup evt)
 	{
-		return $"Event{(evt.IsGlobal ? "_Global" : "")}_{evt.Identifier}";
+		return $"{(evt.IsGlobal ? "Global_" : "")}Event_{evt.Identifier}";
 	}
 
 	public static string GenerateEventNextLabel(EventGroup evt, int orConditionIndex = 0)
