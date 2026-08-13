@@ -65,20 +65,21 @@ int Input::GetControlType(int player)
 	return Application::Instance().GetAppData()->GetControlTypes()[player];
 }
 
-void Input::SetControlType(int player, int type)
+void Input::SetControlType(int player, const CValue& type)
 {
-	if (type >= 1 && type <= 4) //is gamepad
+	int controlType = type.GetIntValue();
+	if (controlType >= 1 && controlType <= 4) //is gamepad
 	{
-		if (!Application::Instance().GetBackend()->input->IsGamepadConnected(type-1))
-			type = 0; //reset back to keyboard
+		if (!Application::Instance().GetBackend()->input->IsGamepadConnected(controlType - 1))
+			controlType = 0; //reset back to keyboard
 	}
 	
-	Application::Instance().GetAppData()->GetControlTypes()[player] = type;
+	Application::Instance().GetAppData()->GetControlTypes()[player] = controlType;
 }
 
-void Input::SetControlKey(int player, short control, unsigned short key)
+void Input::SetControlKey(int player, const CValue& control, unsigned short key)
 {
-	Application::Instance().GetAppData()->GetControlKeys()[player][control] = key;
+	Application::Instance().GetAppData()->GetControlKeys()[player][control.GetIntValue()] = key;
 }
 
 void Input::RestoreControl(int player)

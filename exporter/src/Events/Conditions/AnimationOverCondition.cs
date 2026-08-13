@@ -15,7 +15,7 @@ public class AnimationOverCondition : ConditionBase
 		if (eventBase.Items[0].Loader is Short shortValue)
 			value = shortValue.Value.ToString();
 		else
-			value = ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase);
+			value = ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase) + ".GetIntValue()";
 
 		result.AppendLine($"for (ObjectIterator it(*{GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");

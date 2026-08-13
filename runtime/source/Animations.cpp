@@ -36,7 +36,7 @@ bool Animations::IsFacingDirection(int directionIndex) const
 bool Animations::IsFacingDirectionMask(int directionMask) const
 {
 	if (directionMask == -1) return true;
-	return (1 << GetCurrentDirection()) & directionMask;
+	return (1 << (GetCurrentDirection().GetIntValue())) & directionMask;
 }
 
 std::vector<unsigned int> Animations::GetImagesUsed() const
@@ -70,16 +70,16 @@ unsigned int Animations::GetCurrentImageHandle() const {
 	return direction->Frames.at(displayFrame);
 }
 
-unsigned int Animations::GetCurrentSequenceIndex() const {
-	return forcedSequence != -1 ? forcedSequence : RequestedSequenceIndex;
+CValue Animations::GetCurrentSequenceIndex() const {
+	return CValue(forcedSequence != -1 ? forcedSequence : RequestedSequenceIndex);
 }
 
-unsigned int Animations::GetCurrentDirection() const {
-	return forcedDirection != -1 ? forcedDirection : RequestedDirection;
+CValue Animations::GetCurrentDirection() const {
+	return CValue(forcedDirection != -1 ? forcedDirection : RequestedDirection);
 }
 
-unsigned int Animations::GetCurrentFrameIndex() const {
-	return forcedFrame != -1 ? forcedFrame : CurrentFrameIndex;
+CValue Animations::GetCurrentFrameIndex() const {
+	return CValue(forcedFrame != -1 ? forcedFrame : CurrentFrameIndex);
 }
 
 int Animations::GetAutomaticRotationDirection() const {
@@ -165,7 +165,7 @@ void Animations::SetCurrentDirectionMask(int directionMask)
 	if (validDirections.empty()) return;
 
 	// get a random valid direction from the list
-	int index = Application::Instance().RandomRange(0, static_cast<short>(validDirections.size() - 1));
+	int index = Application::Instance().RandomRange(0, static_cast<short>(validDirections.size() - 1)).GetIntValue();
 
 	SetCurrentDirection(validDirections.at(index));
 }
@@ -188,22 +188,21 @@ void Animations::SetCurrentDirection(int index) {
 	}
 }
 
-void Animations::SetForcedFrame(int frame) {
-	if (forcedFrame == frame) return;
+void Animations::SetForcedFrame(const CValue& frame) {
+	if (forcedFrame == frame.GetIntValue()) return;
 	
 	auto* sequence = Sequences.at(ResolveSequenceIndex(forcedSequence != -1 ? forcedSequence : RequestedSequenceIndex));
 	auto* direction = sequence->Directions.at(forcedDirection != -1 ? forcedDirection : GetNearestDirectionIndex(sequence, RequestedDirection));
 
-	frame = std::clamp(frame, 0, static_cast<int>(direction->Frames.size() - 1));
-	forcedFrame = frame;
+	forcedFrame = std::clamp(frame.GetIntValue(), 0, static_cast<int>(direction->Frames.size() - 1));
 }
 
-void Animations::SetForcedDirection(int directionMask) {
+void Animations::SetForcedDirection(const CValue& directionMask) {
 	int newDirection = -1;
 	auto& sequence = Sequences.at(CurrentSequenceIndex);
 
 	std::vector<int> validDirections;
-	if (directionMask == -1) // set to any valid direction
+	if (directionMask.GetIntValue() == -1) // set to any valid direction
 	{
 		//set to all
 		for (int i = 0; i < 32; ++i) {
@@ -213,7 +212,7 @@ void Animations::SetForcedDirection(int directionMask) {
 	else
 	{
 		for (int i = 0; i < 32; ++i) {
-			if (directionMask & (1 << i)) {
+			if (directionMask.GetIntValue() & (1 << i)) {
 				validDirections.push_back(i);
 			}
 		}
@@ -229,7 +228,7 @@ void Animations::SetForcedDirection(int directionMask) {
 	}
 
 	//get a random valid direction from the list
-	int index = Application::Instance().RandomRange(0, static_cast<short>(validDirections.size() - 1));
+	int index = Application::Instance().RandomRange(0, static_cast<short>(validDirections.size() - 1)).GetIntValue();
 	newDirection = validDirections.at(index);
 	automaticRotationDirection = newDirection;
 

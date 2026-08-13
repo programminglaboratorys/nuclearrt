@@ -19,12 +19,12 @@ public class SetMovementDirectionAction : ActionBase
 			result.AppendLine($"    ((Active*)instance)->animations.SetCurrentDirectionMask({direction});");
 		}
 		else if (eventBase.Items[0].Loader is ExpressionParameter expressionParameter) {
-			direction = ExpressionConverter.ConvertExpression(expressionParameter, eventBase);
-			result.AppendLine($"    ((Active*)instance)->animations.SetCurrentDirection({direction});");
+			direction = $"({ExpressionConverter.ConvertExpression(expressionParameter, eventBase)}).GetIntValue()";
+			result.AppendLine($"    ((Active*)instance)->animations.SetCurrentDirection(({direction}));");
 		}
 
 		// TODO: verify this works with both int and expression parameters
-		result.AppendLine($"    (({ExpressionConverter.GetObjectClassName(eventBase.ObjectInfo, eventBase.ObjectType)}*)instance)->movements.GetCurrentMovement()->SetMovementDirection({direction});");
+		result.AppendLine($"    (({ExpressionConverter.GetObjectClassName(eventBase.ObjectInfo, eventBase.ObjectType)}*)instance)->movements.GetCurrentMovement()->SetMovementDirection(({direction}));");
 		result.AppendLine("}");
 
 		return result.ToString();

@@ -17,7 +17,7 @@ public class SelectMovementAction : ActionBase
 		string movementIndex = "0";
 		if (eventBase.Items[0].Loader is Short shortLoader)
 		{
-			movementIndex = shortLoader.Value.ToString();
+			movementIndex = $"CValue({shortLoader.Value})";
 		}
 		else
 		{

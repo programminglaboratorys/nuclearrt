@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CValue.h"
+
 #include <variant>
 #include <string>
 #include <vector>
@@ -21,23 +23,17 @@ public:
     std::string filename;
     std::vector<EffectParameter> Parameters;
 
-    void SetParameter(std::string name, std::variant<int, float> value)
+    void SetParameter(std::string name, const CValue& value)
     {
         for (auto& parameter : Parameters) {
             if (parameter.Name == name) {
                 if (parameter.Type == 1)
                 {
-                    if (std::holds_alternative<float>(value))
-                        parameter.Value = std::get<float>(value);
-                    else
-                        parameter.Value = static_cast<float>(std::get<int>(value));
+                    parameter.Value = (float)value.GetDoubleValue();
                 }
                 else
                 {
-                    if (std::holds_alternative<int>(value))
-                        parameter.Value = std::get<int>(value);
-                    else
-                        parameter.Value = static_cast<int>(std::get<float>(value));
+                    parameter.Value = value.GetIntValue();
                 }
 
                 return;

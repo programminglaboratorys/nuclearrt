@@ -114,7 +114,7 @@ public:
 
 	void SelectRandom() {
 		if (!SelectedInstances.empty()) {
-			size_t randomIndex = Application::Instance().RandomRange(0, static_cast<short>(SelectedInstances.size() - 1));
+			size_t randomIndex = Application::Instance().RandomRange(0, static_cast<short>(SelectedInstances.size() - 1)).GetIntValue();
 			ObjectInstance* instance = SelectedInstances[randomIndex];
 			SelectOnly(instance);
 		}

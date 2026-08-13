@@ -259,7 +259,16 @@ public class ObjectInfoExporter : BaseExporter
 
 	private string BuildAlterableValues(ObjectCommon common)
 	{
-		return "AlterableValues(std::vector<int>{ " + (common.Values == null ? string.Empty : string.Join(",", common.Values.Items)) + " })";
+		StringBuilder result = new("AlterableValues(std::vector<CValue>{");
+		if (common.Values != null)
+		{
+			foreach (var value in common.Values.Items)
+			{
+				result.Append($"CValue({value}), ");
+			}
+		}
+		result.Append("})");
+		return result.ToString();
 	}
 
 	private string BuildAlterableStrings(ObjectCommon common)
@@ -345,8 +354,8 @@ public class ObjectInfoExporter : BaseExporter
 		if (common.Counter != null)
 		{
 			result.AppendLine($"((Counter*)instance)->DefaultValue = {common.Counter.Initial};");
-			result.AppendLine($"((Counter*)instance)->MinValue = {common.Counter.Minimum};");
-			result.AppendLine($"((Counter*)instance)->MaxValue = {common.Counter.Maximum};");
+			result.AppendLine($"((Counter*)instance)->MinValue = CValue({common.Counter.Minimum});");
+			result.AppendLine($"((Counter*)instance)->MaxValue = CValue({common.Counter.Maximum});");
 			result.AppendLine($"((Counter*)instance)->SetValue({common.Counter.Initial});");
 		}
 

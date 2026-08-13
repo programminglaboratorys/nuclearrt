@@ -1,5 +1,7 @@
 #pragma once
 
+#include "CValue.h"
+
 #include <cstdint>
 #include <vector>
 
@@ -18,9 +20,9 @@ public:
 	bool IsAnyKeyPressed();
 
 	int GetControlType(int player);
-	void SetControlType(int player, int type);
+	void SetControlType(int player, const CValue& type);
 
-	void SetControlKey(int player, short control, unsigned short key);
+	void SetControlKey(int player, const CValue& control, unsigned short key);
 
 	void RestoreControl(int player);
 	void IgnoreControl(int player);

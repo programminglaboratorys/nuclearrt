@@ -13,7 +13,7 @@ public class MoveToLayerAction : ActionBase
 
 		result.AppendLine($"for (ObjectIterator it(*{GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");
-		result.AppendLine($"    MoveObjectToLayer(instance, ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}) - 1);");
+		result.AppendLine($"    MoveObjectToLayer(instance, ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}).GetIntValue() - 1);");
 		result.AppendLine("}");
 
 		return result.ToString();

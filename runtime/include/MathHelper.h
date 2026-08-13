@@ -1,4 +1,7 @@
 #pragma once
+
+#include "CValue.h"
+
 #include <iostream>
 #include <cmath>
 #include <string>
@@ -69,6 +72,22 @@ namespace MathHelper {
     inline double ACos(double v) { return ToDegrees(std::acos(v)); }
     inline double ATan(double v) { return ToDegrees(std::atan(v)); }
     inline double ATan2(double y, double x) { return ToDegrees(std::atan2(y, x)); }
+
+    inline CValue Sqrt(const CValue& v) { return CValue(std::sqrt(v.GetDoubleValue())); }
+    inline CValue Abs(const CValue& v) { return CValue(std::abs(v.GetDoubleValue())); }
+    inline CValue Round(const CValue& v) { return CValue(std::round(v.GetDoubleValue())); }
+
+    inline CValue ToValue(const CValue& v) {
+        if (v.GetType() != CValue::TYPE_STRING)
+            return v;
+
+        const std::string& str = v.GetStringValue();
+        if (str.empty())
+            return CValue(0);
+        if (str.find('.') != std::string::npos)
+            return CValue(std::stod(str));
+        return CValue(std::stoi(str));
+    }
 
     // color helpers
     inline int GetRGB(int r, int g, int b) { return (r << 16) | (g << 8) | b; }

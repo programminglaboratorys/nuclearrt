@@ -4,6 +4,7 @@
 #include <memory>
 #include <unordered_map>
 
+#include "CValue.h"
 #include "Sequence.h"
 #include "ImageBank.h"
 
@@ -18,9 +19,9 @@ public:
 	bool IsFacingDirection(int directionIndex) const;
 	std::vector<unsigned int> GetImagesUsed() const;
 	unsigned int GetCurrentImageHandle() const;
-	unsigned int GetCurrentSequenceIndex() const;
-	unsigned int GetCurrentDirection() const;
-	unsigned int GetCurrentFrameIndex() const;
+	CValue GetCurrentSequenceIndex() const;
+	CValue GetCurrentDirection() const;
+	CValue GetCurrentFrameIndex() const;
 	int GetAutomaticRotationDirection() const;
 
 	int GetXActionPoint() const;
@@ -38,8 +39,8 @@ public:
 	void SetCurrentDirectionMask(int directionMask);
 	void SetCurrentDirection(int index);
 
-	void SetForcedFrame(int frame);
-	void SetForcedDirection(int directionMask);
+	void SetForcedFrame(const CValue& frame);
+	void SetForcedDirection(const CValue& directionMask);
 
 	void RestoreForcedSequence();
 	void RestoreForcedDirection();

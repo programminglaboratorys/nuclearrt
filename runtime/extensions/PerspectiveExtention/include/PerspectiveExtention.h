@@ -16,17 +16,17 @@ PerspectiveExtention(unsigned int objectInfoHandle, int type, std::string name, 
 	void SetDirection(bool direction);
 	void SetPerspectiveDirection(bool perspectiveDir);
 
-	void SetWidth(int width);
-	void SetHeight(int height);
-	void SetZoomValue(int zoomValue);
-	void SetOffset(int offset);
-	void SetSineWaveWaves(int sineWaveWaves);
+	void SetWidth(CValue width);
+	void SetHeight(CValue height);
+	void SetZoomValue(CValue zoomValue);
+	void SetOffset(CValue offset);
+	void SetSineWaveWaves(CValue sineWaveWaves);
 
-	int GetWidth() const { return width; }
-	int GetHeight() const { return height; }
-	int GetZoomValue() const { return zoomValue; }
-	int GetOffset() const { return offset; }
-	int GetSineWaveWaves() const { return sineWaveWaves; }
+	CValue GetWidth() const { return CValue(width); }
+	CValue GetHeight() const { return CValue(height); }
+	CValue GetZoomValue() const { return CValue(zoomValue); }
+	CValue GetOffset() const { return CValue(offset); }
+	CValue GetSineWaveWaves() const { return CValue(sineWaveWaves); }
 private:
 	short width;
 	short height;

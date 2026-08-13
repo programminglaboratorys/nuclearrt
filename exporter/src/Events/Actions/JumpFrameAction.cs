@@ -11,7 +11,7 @@ public class JumpFrameAction : ActionBase
 	{
 		string frame;
 		if (eventBase.Items[0].Loader is ExpressionParameter)
-			frame = $"(({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}) - 1)";
+			frame = $"({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}).GetIntValue() - 1";
 		else
 			frame = Exporter.Instance.GameData.frameHandles.Items[((Short)eventBase.Items[0].Loader).Value].ToString();
 

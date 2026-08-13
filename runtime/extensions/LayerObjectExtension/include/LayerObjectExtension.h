@@ -14,7 +14,7 @@ public:
 	void YSort(bool ascending = true);
 	void XSort(bool ascending = true);
 
-	void AltValueSort(bool ascending, int altIndex, int defaultValue);
+	void AltValueSort(bool ascending, int altIndex, CValue defaultValue);
 
 private:
 	unsigned int currentLayer = 1; // 1-indexed

@@ -148,9 +148,14 @@ void SDL3GraphicsBackend::Initialize() {
 		
 		if(ImGui::CollapsingHeader("Global Variables")) {
 			if (ImGui::CollapsingHeader("Values")) {
-				std::vector<int>& altValues = Application::Instance().GetAppData()->GetGlobalValues();
+				std::vector<CValue>& altValues = Application::Instance().GetAppData()->GetGlobalValues();
 				for (int i = 0; i < altValues.size(); i++) {
-					ImGui::InputInt(("Value " + std::to_string(i)).c_str(), &altValues[i]);
+					if (altValues[i].GetType() == 0) {
+						ImGui::InputInt(("Value " + std::to_string(i)).c_str(), altValues[i].GetIntValuePtr());
+					}
+					else if (altValues[i].GetType() == 1) {
+						ImGui::InputDouble(("Value " + std::to_string(i)).c_str(), altValues[i].GetDoubleValuePtr());
+					}
 				}
 			}
 			if (ImGui::CollapsingHeader("Strings")) {
@@ -183,7 +188,7 @@ void SDL3GraphicsBackend::Initialize() {
 				for (auto& [handle, instance] : currentFrame->ObjectInstances) {					
 					if (ImGui::TreeNode(std::string(instance->Name + "##" + std::to_string(handle)).c_str())) {
 						ImGui::Text("Handle: %d", handle);
-						ImGui::Text("Position: %d, %d", instance->GetX(), instance->GetY());
+						ImGui::Text("Position: %d, %d", instance->GetX().GetIntValue(), instance->GetY().GetIntValue());
 						ImGui::Text("Type: %d", instance->Type);
 
 						if (instance->Type == 2)
@@ -195,7 +200,7 @@ void SDL3GraphicsBackend::Initialize() {
 							ImGui::Checkbox("Visible", &((StringObject*)instance)->Visible);
 							
 							if (ImGui::TreeNode("Paragraphs")) {
-								ImGui::Text("Displayed Text: %s", ((StringObject*)instance)->GetText().c_str());
+								ImGui::Text("Displayed Text: %s", ((StringObject*)instance)->GetText().GetStringValue().c_str());
 								ImGui::Text("Alterable Text: %s", ((StringObject*)instance)->AlterableText.c_str());
 
 								if (ImGui::TreeNode("Paragraphs")) {
@@ -210,7 +215,7 @@ void SDL3GraphicsBackend::Initialize() {
 						}
 						else if (instance->Type == 7)
 						{
-							ImGui::Text("Value: %d", ((Counter*)instance)->GetValue());
+							ImGui::Text("Value: %d", ((Counter*)instance)->GetValue().GetIntValue());
 						}
 
 						if (ImGui::TreeNode("Effect")) {
@@ -1257,7 +1262,7 @@ void SDL3GraphicsBackend::DrawCounterBar(int x, int y, Counter *counter)
 
 	bool isVertical = counter->DisplayType == 2;
 
-	float fillPercent = counter->MaxValue > 0 ? static_cast<float>(counter->GetValue()) / static_cast<float>(counter->MaxValue) : 0.0f;
+	float fillPercent = counter->MaxValue > 0 ? static_cast<float>(counter->GetValue().GetDoubleValue()) / static_cast<float>(counter->MaxValue.GetDoubleValue()) : 0.0f;
 
 	int fillWidth = counter->Width;
 	int fillHeight = counter->Height;

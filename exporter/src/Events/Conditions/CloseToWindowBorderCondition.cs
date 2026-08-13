@@ -18,10 +18,10 @@ public class CloseToWindowBorderCondition : ConditionBase
 		result.AppendLine($"for (ObjectIterator it(*{GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");
 		result.AppendLine($"    CollisionInstanceBounds bounds = GetInstanceBounds(instance);");
-		result.AppendLine($"    if (bounds.minX {(negated ? ">" : "<=")} GetXLeftEdge() + {border} &&");
-		result.AppendLine($"        bounds.maxX {(negated ? "<" : ">=")} GetXRightEdge() - {border} &&");
-		result.AppendLine($"        bounds.minY {(negated ? ">" : "<=")} GetYTopEdge() + {border} &&");
-		result.AppendLine($"        bounds.maxY {(negated ? "<" : ">=")} GetYBottomEdge() - {border})");
+		result.AppendLine($"    if (bounds.minX {(negated ? ">" : "<=")} (GetXLeftEdge() + {border}).GetIntValue() &&");
+		result.AppendLine($"        bounds.maxX {(negated ? "<" : ">=")} (GetXRightEdge() - {border}).GetIntValue() &&");
+		result.AppendLine($"        bounds.minY {(negated ? ">" : "<=")} (GetYTopEdge() + {border}).GetIntValue() &&");
+		result.AppendLine($"        bounds.maxY {(negated ? "<" : ">=")} (GetYBottomEdge() - {border}).GetIntValue())");
 		result.AppendLine($"        it.deselect();");
 		result.AppendLine("}");
 

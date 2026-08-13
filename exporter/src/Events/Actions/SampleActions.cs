@@ -116,7 +116,7 @@ public class StopChannel : ActionBase
 	public override int Num { get; set; } = 15;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->StopSample({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, true);\n";
+		return $"Application::Instance().GetBackend()->audio->StopSample(({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}).GetIntValue(), true);\n";
 	}
 }
 
