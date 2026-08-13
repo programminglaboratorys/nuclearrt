@@ -3,6 +3,7 @@
 #include <memory>
 #include <new>
 #include <string>
+#include <type_traits>
 #include <utility>
 
 class CValue
@@ -19,19 +20,10 @@ public:
         data.i = 0;
     }
 
-    CValue(int value)
+    template<typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+    CValue(T value)
     {
-        data.i = value;
-    }
-
-    CValue(unsigned int value)
-    {
-        data.i = (int)value;
-    }
-
-    CValue(unsigned long long value)
-    {
-        data.i = (int)value;
+        data.i = static_cast<int>(value);
     }
 
     CValue(double value) : type(TYPE_DOUBLE)

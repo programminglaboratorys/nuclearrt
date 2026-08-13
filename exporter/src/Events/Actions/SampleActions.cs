@@ -8,7 +8,7 @@ public class PlaySample : ActionBase
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
 		StringBuilder result = new();
-		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, -1, 1, NULL, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
+		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, -1, 1, 0, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
 
 		return result.ToString();
 	}
@@ -21,7 +21,7 @@ public class PlaySample2Action : ActionBase
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
 		StringBuilder result = new();
-		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, -1, 1, NULL, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
+		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, -1, 1, 0, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
 
 		return result.ToString();
 	}
@@ -84,7 +84,7 @@ public class PlaySampleChannel : ActionBase
 	{
 		StringBuilder result = new();
 
-		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, 1, NULL, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
+		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, 1, 0, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
 
 		return result.ToString();
 	}
@@ -96,7 +96,7 @@ public class PlayAndLoopSample : ActionBase
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
 		StringBuilder result = new();
-		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, -1, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, NULL, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
+		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, -1, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, 0, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
 		return result.ToString();
 	}
 }
@@ -127,7 +127,7 @@ public class PlayAndLoopSampleAtChannel : ActionBase
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
 		StringBuilder result = new();
-		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[2].Loader, eventBase)}, NULL, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
+		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[2].Loader, eventBase)}, 0, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
 
 		return result.ToString();
 	}

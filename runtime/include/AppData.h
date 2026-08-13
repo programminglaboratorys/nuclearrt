@@ -126,8 +126,8 @@ public:
 	CValue GetPlayerScore(int playerIndex) { return CValue(m_playerScores[playerIndex]); }
 	void SetPlayerScores(const std::vector<int>& scores) { m_playerScores = scores; }
 	void SetScore(int playerIndex, const CValue& score) { m_playerScores[playerIndex] = score.GetIntValue(); }
-	void AddScore(int playerIndex, CValue& score) { m_playerScores[playerIndex] = m_playerScores[playerIndex] + score.GetIntValue(); }
-	void SubtractScore(int playerIndex, CValue& score) {
+	void AddScore(int playerIndex, const CValue& score) { m_playerScores[playerIndex] = m_playerScores[playerIndex] + score.GetIntValue(); }
+	void SubtractScore(int playerIndex, const CValue& score) {
 		m_playerScores[playerIndex] = m_playerScores[playerIndex] - score.GetIntValue();
 		if (m_playerScores[playerIndex] < 0) {
 			m_playerScores[playerIndex] = 0;
