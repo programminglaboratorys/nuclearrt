@@ -1,10 +1,10 @@
 using CTFAK.CCN.Chunks.Frame;
 using CTFAK.MMFParser.EXE.Loaders.Events.Parameters;
 
-public class UponClickingCondition : ConditionBase
+public class UponClickingInZoneCondition : ConditionBase
 {
 	public override int[] ObjectType { get; set; } = [-6];
-	public override int Num { get; set; } = -5;
+	public override int Num { get; set; } = -6;
 	public override bool IsTrueEvent => true;
 
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
@@ -17,6 +17,10 @@ public class UponClickingCondition : ConditionBase
 		else if (button == 4)
 			button = 1;
 
-		return $"{ifStatement} (Application::Instance().GetInput()->IsMouseButtonPressed({button}, {(((Click)eventBase.Items[0].Loader).IsDouble == 0 ? false : true).ToString().ToLower()}))) goto {nextLabel};";
+		bool isDouble = ((Click)eventBase.Items[0].Loader).IsDouble != 0;
+		Zone zone = (Zone)eventBase.Items[1].Loader;
+
+		return $"{ifStatement} (Application::Instance().GetInput()->IsMouseButtonPressed({button}, {isDouble.ToString().ToLower()}))) goto {nextLabel};\n" +
+			$"{ifStatement} (GetMouseX() >= {zone.X1} && GetMouseX() <= {zone.X2} && GetMouseY() >= {zone.Y1} && GetMouseY() <= {zone.Y2})) goto {nextLabel};";
 	}
 }

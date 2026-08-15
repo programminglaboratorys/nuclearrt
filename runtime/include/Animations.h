@@ -8,6 +8,8 @@
 #include "Sequence.h"
 #include "ImageBank.h"
 
+class ObjectInstance;
+
 class Animations {
 public:
 	Animations() = default;
@@ -52,8 +54,11 @@ public:
 
 	void Update(float deltaTime);
 
+	void SetOwner(ObjectInstance* owner) { this->owner = owner; }
+
 	bool AutomaticRotation = false;
 private:
+	ObjectInstance* owner = nullptr;
 	std::unordered_map<int, Sequence*> Sequences;
 	float CurrentFrameTime = 0.0f;
 

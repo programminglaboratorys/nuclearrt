@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "Application.h"
+#include "Active.h"
 #include "Counter.h"
 #include "Extension.h"
 #include "FontBank.h"
@@ -31,8 +32,21 @@ void Frame::Update()
 	GameTimer.Update(deltaTime);
 	scrollDirty = false;
 
+	DispatchTrueEvents();
+
+	std::vector<unsigned int> handles;
+	handles.reserve(ObjectInstances.size());
 	for (auto& [handle, instance] : ObjectInstances)
 	{
+		handles.push_back(handle);
+	}
+
+	for (unsigned int handle : handles)
+	{
+		auto found = ObjectInstances.find(handle);
+		if (found == ObjectInstances.end()) continue;
+		ObjectInstance* instance = found->second;
+
 		//Animation update
 		if (instance->Type == 2) // Common object with possible animation
 		{
@@ -57,6 +71,36 @@ void Frame::Update()
 		else if (instance->Type >= 32) // Extension
 		{
 			((Extension*)instance)->Update(deltaTime);
+		}
+	}
+}
+
+void Frame::DispatchTrueEvents()
+{
+	if (Application::Instance().GetCurrentState() == GameState::StartOfFrame)
+	{
+		GenerateEvent(-3, -1);
+	}
+
+	auto input = Application::Instance().GetInput();
+	if (input->IsAnyKeyPressed())
+	{
+		GenerateEvent(-6, -9); // Upon pressing any key
+	}
+
+	if (input->IsAnyMouseButtonPressed())
+	{
+		GenerateEvent(-6, -5); // Upon clicking
+		GenerateEvent(-6, -6); // Upon clicking in zone
+		GenerateEvent(-6, -7); // Upon clicking on object
+	}
+
+	for (int player = 0; player < 4; player++)
+	{
+		if (input->IsControlsPressed(player, 0xFF))
+		{
+			GenerateEvent(-7, -4);
+			break;
 		}
 	}
 }

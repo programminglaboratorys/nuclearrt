@@ -5,6 +5,8 @@
 #include <unordered_map>
 
 #include "Application.h"
+#include "Frame.h"
+#include "ObjectInstance.h"
 
 Animations::Animations(const std::unordered_map<int, Sequence*> sequences) {
 	Sequences = sequences;
@@ -362,6 +364,8 @@ void Animations::Update(float deltaTime) {
 					if (lastSequenceOverIndex != requestedSequence) {
 						SequenceOverEvents[requestedSequence] = true;
 						lastSequenceOverIndex = requestedSequence;
+
+						Application::Instance().GetCurrentFrame()->GenerateEvent(2, -2, owner);
 					}
 
 					// pick the lowest available seq
@@ -378,6 +382,8 @@ void Animations::Update(float deltaTime) {
 					if (lastSequenceOverIndex != requestedSequence) {
 						SequenceOverEvents[requestedSequence] = true;
 						lastSequenceOverIndex = requestedSequence;
+						
+						Application::Instance().GetCurrentFrame()->GenerateEvent(2, -2, owner);
 					}
 				}
 			}

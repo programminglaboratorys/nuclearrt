@@ -23,6 +23,11 @@ public class ButtonObjectExporter : ExtensionExporter
 		return CreateExtension($"{Width}, {Height}, {Type}, {Flags}");
 	}
 
+	public override bool IsTrueEvent(int conditionNum)
+	{
+		return conditionNum == 2; // Button is clicked
+	}
+
 	public override string ExportCondition(EventBase eventBase, int conditionNum, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (", bool isGlobal = false)
 	{
 		StringBuilder result = new StringBuilder();

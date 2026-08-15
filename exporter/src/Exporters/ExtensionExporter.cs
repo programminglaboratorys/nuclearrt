@@ -50,6 +50,13 @@ public abstract class ExtensionExporter
 
 	public abstract string ExportExtension(byte[] extensionData);
 
+	public virtual bool IsTrueEvent(int conditionNum)
+	{
+		//this is kinda shit
+		// extension actions/conditions should be written like any other action/condition
+		return false;
+	}
+
 	public virtual string ExportCondition(EventBase eventBase, int conditionNum, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (", bool isGlobal = false)
 	{
 		return $"// Extension condition {ExtensionName}:{conditionNum} not implemented";

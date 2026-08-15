@@ -100,4 +100,12 @@ public:
     virtual std::vector<unsigned int> GetImagesUsed() { return std::vector<unsigned int>(); };
     virtual std::vector<unsigned int> GetFontsUsed() { return std::vector<unsigned int>(); };
 
+	bool HasQualifier(short qualifier) const {
+		short groupIndex = qualifier & 0x7FFF;
+		for (short stored : Qualifiers) {
+			if ((stored & 0x7FFF) == groupIndex) return true;
+		}
+		return false;
+	}
+
 };

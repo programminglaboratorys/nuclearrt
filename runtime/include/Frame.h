@@ -353,6 +353,7 @@ public:
 	}
 
 	virtual void OnLoop(const std::string& loopName) {}
+	virtual void GenerateEvent(int objectType, int conditionNum, ObjectInstance* source = nullptr) {}
 
 	//Collision detection
 	CollisionInstanceBounds GetInstanceBounds(ObjectInstance* instance);
@@ -362,7 +363,13 @@ public:
 	bool IsCollidingWithBackground(ObjectInstance* instance);
 	bool IsColliding(ObjectInstance* instance1, ObjectInstance* instance2);
 	bool IsColliding(ObjectInstance* instance, int x, int y);
+
+protected:
+	ObjectInstance* trueEventSource = nullptr;
+
 private:
+	void DispatchTrueEvents();
+
 	std::vector<unsigned int> instancesMarkedForDeletion;
 	std::vector<bool> ActiveGroups;
 	std::unordered_map<std::string, LoopState> activeLoops;

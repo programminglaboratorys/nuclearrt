@@ -38,7 +38,15 @@ public:
 	}
 
 	// Called during a event to scope all objects that are relevant to the event
-	void Reset() {
+	void Reset(ObjectInstance* restrictTo = nullptr) {
+		if (restrictTo) {
+			for (auto* obj : AllSelectorObjectInstances) {
+				if (obj == restrictTo) {
+					SelectOnly(restrictTo);
+					return;
+				}
+			}
+		}
 		for (auto* obj : SelectedInstances) {
 			obj->isSelected = false;
 		}

@@ -1,5 +1,6 @@
 #include "ButtonObjectExtension.h"
 #include "Application.h"
+#include "Frame.h"
 #include "GraphicsBackend.h"
 
 void ButtonObjectExtension::Initialize() {
@@ -33,6 +34,8 @@ void ButtonObjectExtension::Update(float deltaTime) {
 	else if (ButtonType == 2) { // radio button
 		Checked = true;
 	}
+
+	GenerateEvent(2);
 }
 
 void ButtonObjectExtension::Draw() {

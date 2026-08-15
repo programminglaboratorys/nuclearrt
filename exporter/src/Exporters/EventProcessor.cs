@@ -13,7 +13,6 @@ public class EventProcessor
 
 	public enum EventLoopType
 	{
-		Animation,
 		Timer,
 		Normal,
 	}
@@ -66,19 +65,15 @@ public class EventProcessor
 			}
 
 			//only add event to normal event loop if it doesn't have a loop condition
-			if (DoesEventHaveLoop(evt) == null)
+			if (DoesEventHaveLoop(evt) == null && !IsTrueEvent(evt, frameIndex))
 			{
 				if (eventLoopType == EventLoopType.Timer)
 				{
 					if (!IsTimerEvent(evt)) continue;
 				}
-				else if (eventLoopType == EventLoopType.Animation)
-				{
-					if (!IsAnimationEvent(evt)) continue;
-				}
 				else if (eventLoopType == EventLoopType.Normal)
 				{
-					if (IsTimerEvent(evt) || IsAnimationEvent(evt)) continue;
+					if (IsTimerEvent(evt)) continue;
 				}
 
 				result.Append($"{eventName}();\n");
@@ -119,7 +114,7 @@ public class EventProcessor
 				{
 					if (usedSelectors.Any(x => x.Item1 == obj.Item1 && x.Item2 == obj.Item2)) continue;
 					usedSelectors.Add(obj);
-					result.AppendLine($"{StringUtils.SanitizeObjectName(obj.Item3)}_{obj.Item1}_selector->Reset();");
+					result.AppendLine($"{StringUtils.SanitizeObjectName(obj.Item3)}_{obj.Item1}_selector->Reset(trueEventSource);");
 				}
 
 				var acBaseTypes = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(ConditionBase))).ToList();
@@ -173,7 +168,7 @@ public class EventProcessor
 				{
 					if (usedSelectors.Any(x => x.Item1 == obj.Item1 && x.Item2 == obj.Item2)) continue;
 					usedSelectors.Add(obj);
-					result.AppendLine($"{StringUtils.SanitizeObjectName(obj.Item3)}_{obj.Item1}_selector->Reset();");
+					result.AppendLine($"{StringUtils.SanitizeObjectName(obj.Item3)}_{obj.Item1}_selector->Reset(trueEventSource);");
 				}
 
 				var acBaseTypes = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(ActionBase))).ToList();
@@ -239,6 +234,11 @@ public class EventProcessor
 			}
 
 			result.AppendLine("}");
+		}
+
+		if (HasAnyTrueEvents(frameIndex))
+		{
+			result.Append(BuildGenerateEventFunction(frameIndex));
 		}
 
 		return result.ToString();
@@ -409,6 +409,13 @@ public class EventProcessor
 		return "void OnLoop(const std::string& loopName) override;\n";
 	}
 
+	public string BuildTrueEventInclude(int frameIndex)
+	{
+		if (!HasAnyTrueEvents(frameIndex)) return "";
+
+		return "void GenerateEvent(int objectType, int conditionNum, ObjectInstance* source = nullptr) override;\n";
+	}
+
 	private bool HasAnyLoopEvents(int frameIndex)
 	{
 		foreach (var evt in _exporter.GameData.Frames[frameIndex].events.Items)
@@ -416,6 +423,119 @@ public class EventProcessor
 			if (DoesEventHaveLoop(evt) != null) return true;
 		}
 		return false;
+	}
+
+	private bool HasAnyTrueEvents(int frameIndex)
+	{
+		foreach (var evt in _exporter.GameData.Frames[frameIndex].events.Items)
+		{
+			if (IsTrueEvent(evt, frameIndex)) return true;
+		}
+		return false;
+	}
+
+	public bool IsTrueEvent(EventGroup evtGroup, int frameIndex)
+	{
+		if (evtGroup.Conditions.Count == 0) return false;
+		if (ShouldSkipEvent(evtGroup)) return false;
+		if (DoesEventHaveLoop(evtGroup) != null) return false;
+		return IsConditionTrueEvent(evtGroup.Conditions[0], frameIndex);
+	}
+
+	public bool IsConditionTrueEvent(EventBase condition, int frameIndex)
+	{
+		if (condition.ObjectType >= 32)
+		{
+			var exporter = ExtensionExporterRegistry.GetExporterByObjectInfo(condition.ObjectInfo, frameIndex);
+			return exporter != null && exporter.IsTrueEvent(Math.Abs(condition.Num) - 80);
+		}
+
+		var handler = GetConditionHandler(condition);
+		return handler != null && handler.IsTrueEvent;
+	}
+
+	ConditionBase? GetConditionHandler(EventBase condition)
+	{
+		var acBaseTypes = Assembly.GetExecutingAssembly().GetTypes().Where(t => t.IsSubclassOf(typeof(ConditionBase))).ToList();
+		var acBaseType = acBaseTypes.FirstOrDefault(t =>
+		{
+			var instance = Activator.CreateInstance(t) as ConditionBase;
+			return instance != null && (instance.ObjectType.Contains(condition.ObjectType) || (condition.ObjectType >= 32 && instance.ObjectType.Any(x => x >= 32))) && instance.Num == condition.Num;
+		});
+
+		if (acBaseType == null && condition.ObjectType >= 32)
+		{
+			acBaseType = typeof(ExtensionConditionBase);
+		}
+
+		if (acBaseType == null) return null;
+		return Activator.CreateInstance(acBaseType) as ConditionBase;
+	}
+
+	string BuildGenerateEventFunction(int frameIndex)
+	{
+		var result = new StringBuilder();
+		result.AppendLine($"void GeneratedFrame{frameIndex}::GenerateEvent(int objectType, int conditionNum, ObjectInstance* source)");
+		result.AppendLine("{");
+		result.AppendLine("\ttrueEventSource = source;");
+
+		var groupStack = new List<int>();
+		var items = _exporter.GameData.Frames[frameIndex].events.Items;
+
+		for (int j = 0; j < items.Count; j++)
+		{
+			var evt = items[j];
+			if (new GroupStartCondition().Equals(evt.Conditions[0]))
+			{
+				groupStack.Add((evt.Conditions[0].Items[0].Loader as Group).Id);
+				continue;
+			}
+			if (new GroupEndCondition().Equals(evt.Conditions[0]))
+			{
+				if (groupStack.Count > 0) groupStack.RemoveAt(groupStack.Count - 1);
+				continue;
+			}
+
+			if (!IsTrueEvent(evt, frameIndex)) continue;
+
+			var first = evt.Conditions[0];
+			result.Append($"\tif (objectType == {first.ObjectType} && conditionNum == {first.Num}");
+			if (first.ObjectType > 0)
+			{
+				result.Append(" && source != nullptr");
+				if (first.ObjectInfo > short.MaxValue)
+				{
+					result.Append($" && source->Type == {first.ObjectType} && source->HasQualifier({first.ObjectInfo & 0x7FFF})");
+				}
+				else
+				{
+					result.Append($" && source->ObjectInfoHandle == {first.ObjectInfo}");
+				}
+			}
+			result.AppendLine(") {");
+
+			string indent = "\t\t";
+			foreach (var groupId in groupStack)
+			{
+				result.AppendLine($"{indent}if (IsGroupActive({groupId})) {{");
+				indent += "\t";
+			}
+
+			result.AppendLine($"{indent}{GetEventName(evt)}();");
+
+			for (int g = groupStack.Count - 1; g >= 0; g--)
+			{
+				indent = indent.Substring(0, indent.Length - 1);
+				result.AppendLine($"{indent}}}");
+			}
+
+			result.AppendLine("\t}");
+		}
+
+		result.AppendLine("\ttrueEventSource = nullptr;");
+		result.AppendLine("}");
+		result.AppendLine("");
+		return result.ToString();
 	}
 
 	public string BuildRunOnceCondition(int frameIndex)
@@ -466,8 +586,7 @@ public class EventProcessor
 	public bool IsTimerEvent(EventGroup evtGroup)
 	{
 		// TODO: Verify if any other conditions should be considered a timer event, I got these from 2006 documentation: https://www.clickteam.com/creation_materials/tutorials/download/Fusion_runtime.pdf
-		if (new StartOfFrameCondition().Equals(evtGroup.Conditions[0])
-			|| new TimerComparisonLessThanCondition().Equals(evtGroup.Conditions[0])
+		if (new TimerComparisonLessThanCondition().Equals(evtGroup.Conditions[0])
 			|| new TimerComparisonGreaterThanCondition().Equals(evtGroup.Conditions[0])
 			|| new TimerComparisonEqualToCondition().Equals(evtGroup.Conditions[0]))
 		{
@@ -475,11 +594,6 @@ public class EventProcessor
 		}
 
 		return false;
-	}
-
-	public bool IsAnimationEvent(EventGroup evtGroup)
-	{
-		return new AnimationOverCondition().Equals(evtGroup.Conditions[0]);
 	}
 
 	public void PreProcessFrame(int frameIndex)

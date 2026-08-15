@@ -18,6 +18,7 @@ public:
 	bool IsKeyPressed(short key);
 	bool IsKeyReleased(short key);
 	bool IsAnyKeyPressed();
+	bool IsAnyMouseButtonPressed();
 
 	int GetControlType(int player);
 	void SetControlType(int player, const CValue& type);

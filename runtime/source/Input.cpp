@@ -60,6 +60,11 @@ bool Input::IsAnyKeyPressed()
 	return false;
 }
 
+bool Input::IsAnyMouseButtonPressed()
+{
+	return (currentMouseState & ~previousMouseState) != 0;
+}
+
 int Input::GetControlType(int player)
 {
 	return Application::Instance().GetAppData()->GetControlTypes()[player];

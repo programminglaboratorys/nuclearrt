@@ -14,6 +14,8 @@ public:
 	virtual void Update(float deltaTime) {}
 	virtual void Draw() {}
 
+	void GenerateEvent(int conditionId);
+
 	bool Visible = true;
 };
 

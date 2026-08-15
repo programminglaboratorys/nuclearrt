@@ -188,6 +188,7 @@ public class ObjectInfoExporter : BaseExporter
 			result.AppendLine($"((Active*)instance)->AutomaticRotation = {common.NewFlags.GetFlag("AutomaticRotation").ToString().ToLower()};");
 			result.AppendLine($"((Active*)instance)->FineDetection = {(!common.NewFlags.GetFlag("CollisionBox")).ToString().ToLower()};");
 			result.AppendLine($"((Active*)instance)->animations = {BuildAnimations(common)};");
+			result.AppendLine($"((Active*)instance)->animations.SetOwner(instance);");
 			result.AppendLine($"((Active*)instance)->Values = {BuildAlterableValues(common)};");
 			result.AppendLine($"((Active*)instance)->Strings = {BuildAlterableStrings(common)};");
 			result.AppendLine($"((Active*)instance)->Flags = {BuildAlterableFlags(common)};");

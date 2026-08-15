@@ -5,6 +5,7 @@ public class StartOfFrameCondition : ConditionBase
 {
 	public override int[] ObjectType { get; set; } = [-3];
 	public override int Num { get; set; } = -1;
+	public override bool IsTrueEvent => true;
 
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
