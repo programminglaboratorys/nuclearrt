@@ -28,6 +28,8 @@ void Frame::PostInitialize()
 
 void Frame::Update()
 {
+	updateCount++;
+	
 	float deltaTime = Application::Instance().GetBackend()->platform->GetTimeDelta();
 	GameTimer.Update(deltaTime);
 	scrollDirty = false;
@@ -77,7 +79,7 @@ void Frame::Update()
 
 void Frame::DispatchTrueEvents()
 {
-	if (Application::Instance().GetCurrentState() == GameState::StartOfFrame)
+	if (updateCount == 1)
 	{
 		GenerateEvent(-3, -1);
 	}

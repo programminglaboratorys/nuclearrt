@@ -367,6 +367,7 @@ public:
 protected:
 	ObjectInstance* trueEventSource = nullptr;
 
+	unsigned int updateCount = 0;
 private:
 	void DispatchTrueEvents();
 
