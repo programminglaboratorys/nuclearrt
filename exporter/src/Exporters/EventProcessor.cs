@@ -142,7 +142,8 @@ public class EventProcessor
 					{ "eventBaseName", idName }, // used for labels
 					{ "frameIndex", frameIndex },
 					{ "eventGroup", evt },
-					{ "numOfOrs", numberOfOrConditions }
+					{ "numOfOrs", numberOfOrConditions },
+					{ "negatedIfStatement", (condition.OtherFlags & 1) == 0 ? "if (" : "if (!" }
 				};
 
 				var instance = Activator.CreateInstance(acBaseType) as ConditionBase;

@@ -398,15 +398,12 @@ bool SDL3AudioBackend::SampleState(int id, bool channel, bool pause) {
 	}
 	if (id > -1 && !channel) { // Check for specific sample not playing/paused.
 		for (int i = 1; i < SDL_arraysize(channels); i++) {
+			//TODO: come back to this to verify paused state
 			if (channels[i].curHandle == id) {
-				if (pause && channels[i].pause) {
+				if (pause == channels[i].pause) {
 					return true;
 				}
-				if (!channels[i].stream && !pause) return true;
-			}
-			else { 
-				if (!pause) return true;
-				else return false;
+				if (channels[i].stream && !pause) return true;
 			}
 		}
 	}
