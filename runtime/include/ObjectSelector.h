@@ -128,6 +128,12 @@ public:
 		}
 	}
 
+	void DeselectAll() {
+		for (auto* obj : SelectedInstances) obj->isSelected = false;
+		SelectedInstances.clear();
+		IsDirty = false;
+	}
+
 	// Get number of selected instances
 	size_t Count() const { return SelectedInstances.size(); }
 	
