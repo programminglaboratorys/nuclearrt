@@ -300,20 +300,22 @@ public class EventProcessor
 			}
 			else if (expression.Loader is Create)
 			{
-				objectInfos.Add(new Tuple<int, int>((expression.Loader as Create).ObjectInfo, (expression.Loader as Create).Position.TypeParent));
+				var create = (Create)expression.Loader;
+				objectInfos.Add(new Tuple<int, int>(create.ObjectInfo, GetObjectType(create.ObjectInfo)));
 
-				if ((expression.Loader as Create).Position.ObjectInfoParent != ushort.MaxValue)
+				if (create.Position.ObjectInfoParent != ushort.MaxValue)
 				{
-					objectInfos.Add(new Tuple<int, int>((int)(expression.Loader as Create).Position.ObjectInfoParent, (expression.Loader as Create).Position.TypeParent));
+					objectInfos.Add(new Tuple<int, int>((int)create.Position.ObjectInfoParent, create.Position.TypeParent));
 				}
 			}
 			else if (expression.Loader is Shoot)
 			{
-				objectInfos.Add(new Tuple<int, int>((expression.Loader as Shoot).ObjectInfo, (expression.Loader as Shoot).ShootPos.TypeParent));
+				var shoot = (Shoot)expression.Loader;
+				objectInfos.Add(new Tuple<int, int>(shoot.ObjectInfo, GetObjectType(shoot.ObjectInfo)));
 
-				if ((expression.Loader as Shoot).ShootPos.ObjectInfoParent != ushort.MaxValue)
+				if (shoot.ShootPos.ObjectInfoParent != ushort.MaxValue)
 				{
-					objectInfos.Add(new Tuple<int, int>((int)(expression.Loader as Shoot).ShootPos.ObjectInfoParent, (expression.Loader as Shoot).ShootPos.TypeParent));
+					objectInfos.Add(new Tuple<int, int>((int)shoot.ShootPos.ObjectInfoParent, shoot.ShootPos.TypeParent));
 				}
 			}
 		}
@@ -330,13 +332,18 @@ public class EventProcessor
 				ObjectInfo evtObj = Exporter.Instance.GameData.frameitems[objectInfo.Item1];
 				string objectName = evtObj.name;
 
-				relevantObjectInfos.Add(new Tuple<int, int, string>(objectInfo.Item1, objectInfo.Item2, objectName));
+				relevantObjectInfos.Add(new Tuple<int, int, string>(objectInfo.Item1, evtObj.ObjectType, objectName));
 			}
 		}
 
 		return [.. relevantObjectInfos.Distinct().ToList()];
 	}
 
+	static int GetObjectType(int objectInfo)
+	{
+		if (objectInfo > short.MaxValue) return 0;
+		return Exporter.Instance.GameData.frameitems[objectInfo].ObjectType;
+	}
 
 	public string BuildEventIncludes(int frameIndex)
 	{
