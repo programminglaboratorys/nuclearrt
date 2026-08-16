@@ -72,7 +72,8 @@ namespace MathHelper {
     inline double ACos(double v) { return ToDegrees(std::acos(v)); }
     inline double ATan(double v) { return ToDegrees(std::atan(v)); }
     inline double ATan2(double y, double x) { return ToDegrees(std::atan2(y, x)); }
-
+    
+    inline CValue Sin(const CValue& v) { return CValue(Sin(v.GetDoubleValue())); }
     inline CValue Sqrt(const CValue& v) { return CValue(std::sqrt(v.GetDoubleValue())); }
     inline CValue Abs(const CValue& v) { return CValue(std::abs(v.GetDoubleValue())); }
     inline CValue Round(const CValue& v) { return CValue(std::round(v.GetDoubleValue())); }
@@ -90,6 +91,7 @@ namespace MathHelper {
     }
 
     // color helpers
+    inline CValue GetRGB(const CValue& r, const CValue& g, const CValue& b) { return CValue(r.GetIntValue() << 16 | g.GetIntValue() << 8 | b.GetIntValue()); }
     inline int GetRGB(int r, int g, int b) { return (r << 16) | (g << 8) | b; }
     inline int GetRed(int rgb) { return (rgb >> 16) & 0xFF; }
     inline int GetGreen(int rgb) { return (rgb >> 8) & 0xFF; }
@@ -111,6 +113,7 @@ namespace MathHelper {
     }
 
     inline double Range(double v, double minVal, double maxVal) { return (v < minVal) ? minVal : (v > maxVal ? maxVal : v); }
+    inline CValue Range(const CValue& v, const CValue& minVal, const CValue& maxVal) { return CValue(Range(v.GetDoubleValue(), minVal.GetDoubleValue(), maxVal.GetDoubleValue())); }
     inline int Stoi(const std::string& str) {
         if (str.empty()) {
             return 0;
