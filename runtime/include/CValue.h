@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cmath>
 #include <memory>
 #include <new>
 #include <string>
@@ -449,6 +450,88 @@ public:
                     else
                         data.d = 0.0;
                 }
+                break;
+        }
+        return *this;
+    }
+
+    CValue& operator%(const CValue& other)
+    {
+        switch (type)
+        {
+            case TYPE_INT:
+                if (other.type == TYPE_INT)
+                {
+                    if (other.data.i != 0)
+                        data.i %= other.data.i;
+                    else
+                        data.i = 0;
+                }
+                else if (other.type == TYPE_DOUBLE)
+                {
+                    ConvertIntToDouble();
+                    if (other.data.d != 0.0)
+                        data.d = std::fmod(data.d, other.data.d);
+                    else
+                        data.d = 0.0;
+                }
+                break;
+            case TYPE_DOUBLE:
+                if (other.type == TYPE_INT)
+                {
+                    if (other.data.i != 0)
+                        data.d = std::fmod(data.d, (double)other.data.i);
+                    else
+                        data.d = 0.0;
+                }
+                else if (other.type == TYPE_DOUBLE)
+                {
+                    if (other.data.d != 0.0)
+                        data.d = std::fmod(data.d, other.data.d);
+                    else
+                        data.d = 0.0;
+                }
+                break;
+        }
+        return *this;
+    }
+
+    CValue& operator%(int other)
+    {
+        switch (type)
+        {
+            case TYPE_INT:
+                if (other != 0)
+                    data.i %= other;
+                else
+                    data.i = 0;
+                break;
+            case TYPE_DOUBLE:
+                if (other != 0)
+                    data.d = std::fmod(data.d, (double)other);
+                else
+                    data.d = 0.0;
+                break;
+        }
+        return *this;
+    }
+
+    CValue& operator%(double other)
+    {
+        switch (type)
+        {
+            case TYPE_INT:
+                ConvertIntToDouble();
+                if (other != 0.0)
+                    data.d = std::fmod(data.d, other);
+                else
+                    data.d = 0.0;
+                break;
+            case TYPE_DOUBLE:
+                if (other != 0.0)
+                    data.d = std::fmod(data.d, other);
+                else
+                    data.d = 0.0;
                 break;
         }
         return *this;
