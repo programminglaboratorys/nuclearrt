@@ -283,7 +283,7 @@ void PerspectiveExtention::UpdateShaderParameters()
     }
 }
 
-void PerspectiveExtention::Draw()
+void PerspectiveExtention::Draw(int scrollX, int scrollY)
 {
-    Application::Instance().GetBackend()->graphics->DrawEffectRect(GetX().GetIntValue(), GetY().GetIntValue(), width, height, 0, 0, 0, effectInstance);
+    Application::Instance().GetBackend()->graphics->DrawEffectRect(GetX().GetIntValue() - scrollX, GetY().GetIntValue() - scrollY, width, height, 0, 0, 0, effectInstance);
 }

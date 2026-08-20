@@ -38,7 +38,7 @@ void ButtonObjectExtension::Update(float deltaTime) {
 	GenerateEvent(2);
 }
 
-void ButtonObjectExtension::Draw() {
+void ButtonObjectExtension::Draw(int scrollX, int scrollY) {
 	if (!Shown) return;
 
 	bitmap.Clear(0xFFFFFFFF);

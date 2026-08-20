@@ -12,7 +12,7 @@ public:
 
 	virtual void Initialize() {}
 	virtual void Update(float deltaTime) {}
-	virtual void Draw() {}
+	virtual void Draw(int scrollX, int scrollY) {}
 
 	void GenerateEvent(int conditionId);
 

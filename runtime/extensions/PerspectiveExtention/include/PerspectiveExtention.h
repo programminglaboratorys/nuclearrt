@@ -8,7 +8,7 @@ PerspectiveExtention(unsigned int objectInfoHandle, int type, std::string name, 
 		: Extension(objectInfoHandle, type, name), width(width), height(height), effect(effect), direction(direction), zoomValue(zoomValue), offset(offset), sineWaveWaves(sineWaveWaves), perspectiveDir(perspectiveDir) {}
 
 	void Initialize() override;
-	void Draw() override;
+	void Draw(int scrollX, int scrollY) override;
 
 	void UpdateShaderParameters();
 

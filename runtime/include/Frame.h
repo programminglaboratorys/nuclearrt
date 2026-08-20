@@ -370,6 +370,7 @@ protected:
 	unsigned int updateCount = 0;
 private:
 	void DispatchTrueEvents();
+	void UpdateScrolling(int newX, int newY);
 
 	std::vector<unsigned int> instancesMarkedForDeletion;
 	std::vector<bool> ActiveGroups;
