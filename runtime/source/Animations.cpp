@@ -360,14 +360,6 @@ void Animations::Update(float deltaTime) {
 				int firstSequenceIndex = GetFirstSequenceIndex();
 				
 				if (displaySequence != firstSequenceIndex) {
-
-					if (lastSequenceOverIndex != requestedSequence) {
-						SequenceOverEvents[requestedSequence] = true;
-						lastSequenceOverIndex = requestedSequence;
-
-						Application::Instance().GetCurrentFrame()->GenerateEvent(2, -2, owner);
-					}
-
 					// pick the lowest available seq
 					RequestedSequenceIndex = 0;
 					CurrentSequenceIndex = ResolveSequenceIndex(RequestedSequenceIndex);
@@ -375,6 +367,13 @@ void Animations::Update(float deltaTime) {
 					RequestedDirection = CurrentDirection;
 					CurrentFrameIndex = 0;
 					CurrentFrameTime = 0.0f;
+
+					if (lastSequenceOverIndex != requestedSequence) {
+						SequenceOverEvents[requestedSequence] = true;
+						lastSequenceOverIndex = requestedSequence;
+
+						Application::Instance().GetCurrentFrame()->GenerateEvent(2, -2, owner);
+					}
 				}
 				else // if it is the first one, stay on the last frame
 				{
