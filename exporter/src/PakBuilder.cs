@@ -1,4 +1,7 @@
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.Runtime.InteropServices;
 using CTFAK.EXE;
 using CTFAK.FileReaders;
 using CTFAK.Memory;
@@ -41,11 +44,11 @@ public class PakBuilder
 		//images
 		foreach (var image in gameData.Images.Items.Values)
 		{
-			var entry = new PakEntry { Path = $"images/{image.Handle}.png" };
-			using var imageStream = new MemoryStream();
-			image.bitmap.Save(imageStream, System.Drawing.Imaging.ImageFormat.Png);
+			var entry = new PakEntry { Path = $"images/{image.Handle}.rgba" };
+			MemoryStream imageStream = WriteCompressedImage(image.bitmap);
 			entry.Size = (uint)imageStream.Length;
 			entry.Data = imageStream.ToArray();
+			imageStream.Close();
 			mainPak.AddEntry(entry);
 		}
 
@@ -189,6 +192,28 @@ public class PakBuilder
 			return "ogg";
 
 		return "wav";
+	}
+
+	public static MemoryStream WriteCompressedImage(Bitmap image)
+	{
+		byte[] uncomp = new byte[image.Width * image.Height * 4];
+		BitmapData bitmapData = image.LockBits(new Rectangle(0, 0, image.Width, image.Height), ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
+		Marshal.Copy(bitmapData.Scan0, uncomp, 0, uncomp.Length);
+		image.UnlockBits(bitmapData);
+
+		// swap BGRA to RGBA
+		for (int i = 0; i < uncomp.Length; i += 4)
+		{
+			(uncomp[i], uncomp[i + 2]) = (uncomp[i + 2], uncomp[i]);
+		}
+
+		byte[] comp = new byte[K4os.Compression.LZ4.LZ4Codec.MaximumOutputSize(uncomp.Length)];
+		int encodedLength = K4os.Compression.LZ4.LZ4Codec.Encode(
+			uncomp, 0, uncomp.Length,
+			comp, 0, comp.Length,
+			K4os.Compression.LZ4.LZ4Level.L09_HC);
+
+		return new MemoryStream(comp, 0, encodedLength);
 	}
 }
 

@@ -12,6 +12,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
 #include <SDL3_ttf/SDL_ttf.h>
+#include "lz4.h"
 #ifdef _DEBUG
 #include "DebugUI.h"
 #include "imgui.h"
@@ -1002,7 +1003,7 @@ void SDL3GraphicsBackend::LoadTexture(int id)
 	}
 
 	char imageFileName[32];
-	std::snprintf(imageFileName, sizeof(imageFileName), "images/%d.png", id);
+	std::snprintf(imageFileName, sizeof(imageFileName), "images/%d.rgba", id);
 
 	if (!backend->platform)
 		return;
@@ -1013,19 +1014,15 @@ void SDL3GraphicsBackend::LoadTexture(int id)
 		return;
 	}
 
-	SDL_IOStream *stream = SDL_IOFromMem(data.data(), data.size());
-	SDL_Surface *surface = IMG_Load_IO(stream, true);
-	if (surface == nullptr)
-	{
-		backend->GetPlatform()->Log("IMG_Load_IO Error: " + std::string(SDL_GetError()));
-		return;
-	}
+	const int width = imageInfo->Width;
+	const int height = imageInfo->Height;
+	const int decompressedSize = width * height * 4;
+	std::vector<uint8_t> pixels(static_cast<size_t>(decompressedSize));
 
-	SDL_Surface *rgbaSurface = SDL_ConvertSurface(surface, SDL_PIXELFORMAT_RGBA32);
-	SDL_DestroySurface(surface);
-	if (rgbaSurface == nullptr)
+	const int decoded = LZ4_decompress_safe(reinterpret_cast<const char*>(data.data()),reinterpret_cast<char*>(pixels.data()), static_cast<int>(data.size()), decompressedSize);
+	if (decoded != decompressedSize)
 	{
-		backend->GetPlatform()->Log("SDL_ConvertSurface Error: " + std::string(SDL_GetError()));
+		backend->GetPlatform()->Log("LZ4_decompress_safe Error: Failed to decompress image " + std::to_string(id));
 		return;
 	}
 
@@ -1038,12 +1035,10 @@ void SDL3GraphicsBackend::LoadTexture(int id)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, rgbaSurface->w, rgbaSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, rgbaSurface->pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels.data());
 
-	texture.width = rgbaSurface->w;
-	texture.height = rgbaSurface->h;
-
-	SDL_DestroySurface(rgbaSurface);
+	texture.width = width;
+	texture.height = height;
 
 	textures[id] = texture;
 }
