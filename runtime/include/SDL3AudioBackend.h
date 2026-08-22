@@ -46,7 +46,7 @@ public:
 	bool LoadSample(int id, int channel) override;
 	bool LoadSampleFile(std::string path) override;
 	int FindSample(std::string name) override;
-	void PlaySample(int id, CValue channel, CValue loops, CValue freq, bool uninterruptable, CValue volume, CValue pan) override;
+	void PlaySample(int id, int channel, int loops, int freq, bool uninterruptable, float volume, float pan) override;
 	void PlaySampleFile(std::string path, int channel, int loops) override;
 	void DiscardSampleFile(std::string path) override;
 	void UpdateSample() override;
@@ -56,15 +56,15 @@ public:
 	CValue GetSampleVolume(std::string name) override;
 	CValue GetChannelVolume(CValue id) override;
 	CValue GetChannelName(CValue channel) override;
-	void SetSampleVolume(CValue volume, CValue id, bool channel) override;
+	void SetSampleVolume(float volume, int id, bool channel) override;
 	void LockChannel(int channel, bool unlock) override;
-	void SetSamplePan(CValue pan, CValue id, bool channel) override;
+	void SetSamplePan(float pan, int id, bool channel) override;
 	CValue GetSamplePan(int id, bool channel) override;
-	void SetSampleFreq(CValue freq, int id, bool channel) override;
+	void SetSampleFreq(int freq, int id, bool channel) override;
 	CValue GetSampleFreq(int id, bool channel) override;
 	CValue GetSampleDuration(int id, bool channel) override;
 	CValue GetSamplePos(int id, bool channel) override;
-	void SetSamplePos(CValue pos, int id, bool channel) override;
+	void SetSamplePos(int pos, int id, bool channel) override;
 	void StopSample(int id, bool channel) override;
 	
 

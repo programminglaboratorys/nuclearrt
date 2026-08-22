@@ -33,7 +33,7 @@ public class PlaySampleAllParameters : ActionBase
 	public override int Num { get; set; } = 36;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[2].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[5].Loader, eventBase)}, {CheckType.GetUninterruptable(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[3].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[4].Loader, eventBase)});";
+		return $"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}).GetIntValue(), ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[2].Loader, eventBase)}).ToIntValue(), {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[5].Loader, eventBase)}.ToIntValue(), {CheckType.GetUninterruptable(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[3].Loader, eventBase)}.ToIntValue(), {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[4].Loader, eventBase)}.ToIntValue());";
 	}
 }
 public class CheckType
@@ -84,7 +84,7 @@ public class PlaySampleChannel : ActionBase
 	{
 		StringBuilder result = new();
 
-		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, 1, 0, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
+		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}).GetIntValue(), 1, 0, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
 
 		return result.ToString();
 	}
@@ -127,7 +127,7 @@ public class PlayAndLoopSampleAtChannel : ActionBase
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
 		StringBuilder result = new();
-		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[2].Loader, eventBase)}, 0, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
+		result.AppendLine($"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}).GetIntValue(), ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[2].Loader, eventBase)}).GetIntValue(), 0, {CheckType.GetUninterruptable(eventBase)}, -1, -2);");
 
 		return result.ToString();
 	}
@@ -138,7 +138,7 @@ public class SetMainVolume : ActionBase
 	public override int Num { get; set; } = 20;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->SetSampleVolume({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, -1, false);";
+		return $"Application::Instance().GetBackend()->audio->SetSampleVolume(({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}).GetDoubleValue(), -1, false);";
 	}
 }
 public class SetChannelVolume : ActionBase
@@ -147,7 +147,7 @@ public class SetChannelVolume : ActionBase
 	public override int Num { get; set; } = 17;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->SetSampleVolume({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, true);";
+		return $"Application::Instance().GetBackend()->audio->SetSampleVolume(({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}).GetDoubleValue(), ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}).GetIntValue(), true);";
 	}
 }
 public class SetSampleVolume : ActionBase
@@ -156,7 +156,7 @@ public class SetSampleVolume : ActionBase
 	public override int Num { get; set; } = 21;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->SetSampleVolume({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, {CheckType.Check(eventBase)}, true);";
+		return $"Application::Instance().GetBackend()->audio->SetSampleVolume(({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}).GetDoubleValue(), {CheckType.Check(eventBase)}, true);";
 	}
 }
 public class PauseSpecificSample : ActionBase
@@ -165,7 +165,7 @@ public class PauseSpecificSample : ActionBase
 	public override int Num { get; set; } = 7;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->PauseSample({CheckType.Check(eventBase)}, false, {(eventBase.Num == 7 ? "true" : "false")});";
+		return $"Application::Instance().GetBackend()->audio->PauseSample(({CheckType.Check(eventBase)}).GetIntValue(), false, {(eventBase.Num == 7 ? "true" : "false")});";
 	}
 
 }
@@ -179,7 +179,7 @@ public class PauseChannel : ActionBase
 	public override int Num { get; set; } = 13;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->PauseSample({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, true, {(eventBase.Num == 13 ? "true" : "false")});";
+		return $"Application::Instance().GetBackend()->audio->PauseSample(({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}).GetIntValue(), true, {(eventBase.Num == 13 ? "true" : "false")});";
 	}
 }
 public class ResumeChannel : PauseChannel
@@ -218,7 +218,7 @@ public class SetMainPan : ActionBase
 	public override int Num { get; set; } = 22;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->SetSamplePan({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, -1, false);";
+		return $"Application::Instance().GetBackend()->audio->SetSamplePan(({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}).GetDoubleValue(), -1, false);";
 	}
 }
 public class SetSamplePan : ActionBase
@@ -227,7 +227,7 @@ public class SetSamplePan : ActionBase
 	public override int Num { get; set; } = 23;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->SetSamplePan({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, {CheckType.Check(eventBase)}, false);";
+		return $"Application::Instance().GetBackend()->audio->SetSamplePan(({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}).GetDoubleValue(), {CheckType.Check(eventBase)}, false);";
 	}
 }
 
@@ -237,7 +237,7 @@ public class SetChannelPan : ActionBase
 	public override int Num { get; set; } = 18;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->SetSamplePan({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}, true);";
+		return $"Application::Instance().GetBackend()->audio->SetSamplePan(({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}).GetDoubleValue(), ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}).GetIntValue(), true);";
 	}
 }
 public class SetSampleFrequency : ActionBase
