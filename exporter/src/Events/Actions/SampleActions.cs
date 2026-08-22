@@ -165,7 +165,11 @@ public class PauseSpecificSample : ActionBase
 	public override int Num { get; set; } = 7;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->PauseSample(({CheckType.Check(eventBase)}).GetIntValue(), false, {(eventBase.Num == 7 ? "true" : "false")});";
+		//this is sucks
+		string check = CheckType.Check(eventBase);
+		if (check.Contains("CValue"))
+			check = $"({check}).GetIntValue()";
+		return $"Application::Instance().GetBackend()->audio->PauseSample({check}, false, {(eventBase.Num == 7 ? "true" : "false")});";
 	}
 
 }
