@@ -44,6 +44,14 @@ private:
 	uint32_t currentMouseState;
 	uint32_t previousMouseState;
 
+	int lastClickMouseX = 0;
+	int lastClickMouseY = 0;
+	int lastClickButton = -1;
+	int doubleClickButton = -1;
+	unsigned int lastClickTicks = 0;
+
+	static constexpr unsigned int DOUBLE_CLICK_MS = 500;
+
 	uint8_t m_gamepadState[2][4];
 
 	std::vector<bool> m_playerEnabled;
