@@ -230,11 +230,11 @@ public:
 		return CValue(angle);
 	}
 
-	CValue OAngle(std::shared_ptr<ObjectSelector> selector, int xTarget, int yTarget) {
-		if (!selector || selector->Count() == 0) {
+	CValue OAngle(ObjectSelector& selector, int xTarget, int yTarget) {
+		if (selector.Count() == 0) {
 			return CValue(0);
 		}
-		return OAngle(*(selector->begin()), xTarget, yTarget);
+		return OAngle(*(selector.begin()), xTarget, yTarget);
 	}
 
 	CValue ODistance(ObjectInstance* instance, int xTarget, int yTarget) {
@@ -243,11 +243,11 @@ public:
 		return CValue(static_cast<int>(sqrt(distanceX * distanceX + distanceY * distanceY)));
 	}
 
-	CValue ODistance(std::shared_ptr<ObjectSelector> selector, int xTarget, int yTarget) {
-		if (!selector || selector->Count() == 0) {
+	CValue ODistance(ObjectSelector& selector, int xTarget, int yTarget) {
+		if (selector.Count() == 0) {
 			return CValue(0);
 		}
-		return ODistance(*(selector->begin()), xTarget, yTarget);
+		return ODistance(*(selector.begin()), xTarget, yTarget);
 	}
 
 	CValue GetAlterableValueByIndex(ObjectInstance* instance, int index) {
@@ -261,11 +261,11 @@ public:
 		return CValue(0);
 	}
 
-	CValue GetAlterableValueByIndex(std::shared_ptr<ObjectSelector> selector, int index) {
-		if (!selector || selector->Count() == 0) {
+	CValue GetAlterableValueByIndex(ObjectSelector& selector, int index) {
+		if (selector.Count() == 0) {
 			return CValue(0);
 		}
-		return GetAlterableValueByIndex(*(selector->begin()), index);
+		return GetAlterableValueByIndex(*(selector.begin()), index);
 	}
 
 	int GetAlterableFlagValue(ObjectInstance* instance, int index) {
@@ -278,11 +278,11 @@ public:
 		return 0;
 	}
 
-	int GetAlterableFlagValue(std::shared_ptr<ObjectSelector> selector, int index) {
-		if (!selector || selector->Count() == 0) {
+	int GetAlterableFlagValue(ObjectSelector& selector, int index) {
+		if (selector.Count() == 0) {
 			return 0;
 		}
-		return GetAlterableFlagValue(*(selector->begin()), index);
+		return GetAlterableFlagValue(*(selector.begin()), index);
 	}
 
 	struct LoopState {

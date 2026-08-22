@@ -15,7 +15,7 @@ public class CloseToWindowBorderCondition : ConditionBase
 
 		bool negated = ifStatement == "if (!";
 
-		result.AppendLine($"for (ObjectIterator it(*{GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
+		result.AppendLine($"for (ObjectIterator it({GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");
 		result.AppendLine($"    CollisionInstanceBounds bounds = GetInstanceBounds(instance);");
 		result.AppendLine($"    if (bounds.minX {(negated ? ">" : "<=")} (GetXLeftEdge() + {border}).GetIntValue() &&");
@@ -26,7 +26,7 @@ public class CloseToWindowBorderCondition : ConditionBase
 		result.AppendLine("}");
 
 		//If no instances are selected, we go to the end label
-		result.AppendLine($"if ({GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}->Count() == 0) goto {nextLabel};");
+		result.AppendLine($"if ({GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}.Count() == 0) goto {nextLabel};");
 
 		return result.ToString();
 	}

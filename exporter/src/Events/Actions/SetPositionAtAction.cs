@@ -11,7 +11,7 @@ public class SetPositionAtAction : ActionBase
 	{
 		StringBuilder result = new StringBuilder();
 
-		result.AppendLine($"for (ObjectIterator it(*{GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
+		result.AppendLine($"for (ObjectIterator it({GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");
 
 		Position position = (Position)eventBase.Items[0].Loader;
@@ -22,7 +22,7 @@ public class SetPositionAtAction : ActionBase
 		else // Relative position from object
 		{
 			//get the object
-			result.AppendLine($"    auto parent = {GetSelector((int)position.ObjectInfoParent, position.TypeParent)}->At(it.index());");
+			result.AppendLine($"    auto parent = {GetSelector((int)position.ObjectInfoParent, position.TypeParent)}.At(it.index());");
 			result.AppendLine($"    if (parent != nullptr) {{");
 			result.AppendLine($"        instance->SetPosition(CValue({position.X}) + parent->GetX(), CValue({position.Y}) + parent->GetY());");
 			result.AppendLine($"    }}");

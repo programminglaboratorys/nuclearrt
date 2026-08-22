@@ -16,7 +16,7 @@ public class PickLowestExpressionCondition : ConditionBase
 		result.AppendLine($"std::vector<ObjectInstance*> lowestInstances;");
 		result.AppendLine($"CValue lowestExpression = nullptr;");
 
-		result.AppendLine($"for (ObjectIterator it(*{GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
+		result.AppendLine($"for (ObjectIterator it({GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");
 		result.AppendLine($"    CValue expression = {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)};");
 		result.AppendLine($"    if (lowestExpression == nullptr || expression < lowestExpression) {{");
@@ -32,9 +32,9 @@ public class PickLowestExpressionCondition : ConditionBase
 		result.AppendLine($"    goto {nextLabel};");
 		result.AppendLine("else");
 		result.AppendLine("{");
-		result.AppendLine($"    {GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}->DeselectAll();");
+		result.AppendLine($"    {GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}.DeselectAll();");
 		result.AppendLine($"    for (auto instance : lowestInstances) {{");
-		result.AppendLine($"        {GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}->Select(instance);");
+		result.AppendLine($"        {GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}.Select(instance);");
 		result.AppendLine($"    }}");
 		result.AppendLine("}");
 

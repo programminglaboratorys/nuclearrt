@@ -11,14 +11,12 @@ public:
 	using iterator = std::vector<ObjectInstance*>::iterator;
 	using const_iterator = std::vector<ObjectInstance*>::const_iterator;
 
-	// Constructor that references an external collection
-	ObjectSelector(const std::unordered_map<unsigned int, ObjectInstance*>& allInstances, unsigned int objectInfoId, bool isQualifier = false)
-		: AllInstances(allInstances), ObjectInfoId(objectInfoId), IsQualifier(isQualifier), IsDirty(false) {
-		Initialize(allInstances);
-	}
+	ObjectSelector() = default;
 
 	// called after all object instances are created on frame initialization and when a new object is created that needs to be added to the selector
-	void Initialize(const std::unordered_map<unsigned int, ObjectInstance*>& allInstances) {
+	void Initialize(const std::unordered_map<unsigned int, ObjectInstance*>& allInstances, unsigned int objectInfoId, bool isQualifier = false) {
+		ObjectInfoId = objectInfoId;
+		IsQualifier = isQualifier;
 		AllSelectorObjectInstances.clear();
 		for (const auto& [handle, instance] : allInstances) {
 			instance->isSelected = false; 
@@ -171,12 +169,11 @@ private:
 		}
 	}
 
-	const std::unordered_map<unsigned int, ObjectInstance*>& AllInstances;
-	std::vector<ObjectInstance*> SelectedInstances;	  
+	std::vector<ObjectInstance*> SelectedInstances;
 	std::vector<ObjectInstance*> AllSelectorObjectInstances; // list of all object instance handles for this selector
-	unsigned int ObjectInfoId;
-	bool IsQualifier;
-	bool IsDirty; 
+	unsigned int ObjectInfoId = 0;
+	bool IsQualifier = false;
+	bool IsDirty = false;
 };
 
 // Add ObjectIterator class to support the requested iteration pattern

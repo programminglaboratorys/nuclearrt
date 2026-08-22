@@ -85,7 +85,7 @@ public abstract class ExtensionExporter
 	protected string GetExtensionInstance(int objectInfo, int objectType)
 	{
 		string selector = GetSelector(objectInfo, objectType);
-		return $"(({CppClassName}*)*({selector}->begin()))";
+		return $"(({CppClassName}*)*({selector}.begin()))";
 	}
 
 	protected string GetExtensionInstanceLoop()

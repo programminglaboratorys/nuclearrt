@@ -19,8 +19,8 @@ public class CreateObjectAtAction : ActionBase
 		result.AppendLine("{");
 		result.AppendLine($"ObjectInstance* instance = CreateInstance(ObjectFactory::Instance().CreateInstance_{StringUtils.SanitizeObjectName(objectInfo.Item2)}_{objectInfo.Item1}(), {X}, {Y}, {layer}, 0, {objectInfo.Item1}, 0, true);");
 		//add to selector
-		result.AppendLine($"{GetSelector(obj.ObjectInfo, obj.ObjectType)}->AddInstance(instance);");
-		result.AppendLine($"{GetSelector(obj.ObjectInfo, obj.ObjectType)}->SelectOnly(instance);");
+		result.AppendLine($"{GetSelector(obj.ObjectInfo, obj.ObjectType)}.AddInstance(instance);");
+		result.AppendLine($"{GetSelector(obj.ObjectInfo, obj.ObjectType)}.SelectOnly(instance);");
 		result.AppendLine("}");
 
 		return result.ToString();

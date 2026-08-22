@@ -40,11 +40,11 @@ public:
 		}
 	}
 
-	static CValue GetTextOfParagraph(ObjectSelector* selector, const CValue& paragraph)
+	static CValue GetTextOfParagraph(ObjectSelector& selector, const CValue& paragraph)
 	{
-		if (selector && selector->Count() > 0)
+		if (selector.Count() > 0)
 		{
-			return ((StringObject*)*selector->begin())->GetTextOfParagraph(paragraph);
+			return ((StringObject*)*selector.begin())->GetTextOfParagraph(paragraph);
 		}
 		return CValue(""); // default value
 	}

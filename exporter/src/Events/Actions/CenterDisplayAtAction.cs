@@ -18,7 +18,7 @@ public class CenterDisplayAtAction : ActionBase
 		}
 		else // Relative position from object
 		{
-			result.AppendLine($"for (ObjectIterator it(*{GetSelector((int)position.ObjectInfoParent, position.TypeParent)}); !it.end(); ++it) {{");
+			result.AppendLine($"for (ObjectIterator it({GetSelector((int)position.ObjectInfoParent, position.TypeParent)}); !it.end(); ++it) {{");
 			result.AppendLine($"    auto parent = *it;");
 			result.AppendLine($"    SetScroll(CValue({position.X}) + parent->GetX(), CValue({position.Y}) + parent->GetY(), parent->Layer);");
 			result.AppendLine("}");

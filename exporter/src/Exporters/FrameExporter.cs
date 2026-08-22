@@ -189,7 +189,7 @@ public class FrameExporter : BaseExporter
 				string objectName = GameData.frameitems[(int)obj.objectInfo].name;
 				int objectType = GameData.frameitems[(int)obj.objectInfo].ObjectType;
 				if (objectType == 0 || objectType == 1) continue;
-				eventObjects.AppendLine($"std::shared_ptr<ObjectSelector> {SanitizeObjectName(objectName)}_{obj.objectInfo}_selector;");
+				eventObjects.AppendLine($"ObjectSelector {SanitizeObjectName(objectName)}_{obj.objectInfo}_selector;");
 			}
 		}
 
@@ -197,7 +197,7 @@ public class FrameExporter : BaseExporter
 		foreach (var qualifier in frame.events.QualifiersList)
 		{
 			string objectName = Utilities.GetQualifierName(qualifier.Qualifier, qualifier.Type);
-			eventObjects.AppendLine($"std::shared_ptr<ObjectSelector> {SanitizeObjectName(objectName)}_{qualifier.ObjectInfo}_selector;");
+			eventObjects.AppendLine($"ObjectSelector {SanitizeObjectName(objectName)}_{qualifier.ObjectInfo}_selector;");
 		}
 
 		return eventObjects.ToString();
@@ -216,7 +216,7 @@ public class FrameExporter : BaseExporter
 				string objectName = GameData.frameitems[(int)obj.objectInfo].name;
 				int objectType = GameData.frameitems[(int)obj.objectInfo].ObjectType;
 				if (objectType == 0 || objectType == 1) continue;
-				objectSelectorsInit.AppendLine($"{SanitizeObjectName(objectName)}_{obj.objectInfo}_selector = std::make_shared<ObjectSelector>(ObjectInstances, {obj.objectInfo}, false);");
+				objectSelectorsInit.AppendLine($"{SanitizeObjectName(objectName)}_{obj.objectInfo}_selector.Initialize(ObjectInstances, {obj.objectInfo}, false);");
 			}
 		}
 
@@ -225,7 +225,7 @@ public class FrameExporter : BaseExporter
 		{
 			string objectName = Utilities.GetQualifierName(qualifier.ObjectInfo & 0x7FFF, qualifier.Type);
 			uint qualifierHandle = ((uint)qualifier.ObjectInfo & 0x7FFF) | ((uint)qualifier.Type << 16);
-			objectSelectorsInit.AppendLine($"{SanitizeObjectName(objectName)}_{qualifier.ObjectInfo}_selector = std::make_shared<ObjectSelector>(ObjectInstances, {qualifierHandle}, true);");
+			objectSelectorsInit.AppendLine($"{SanitizeObjectName(objectName)}_{qualifier.ObjectInfo}_selector.Initialize(ObjectInstances, {qualifierHandle}, true);");
 		}
 
 		return objectSelectorsInit.ToString();
