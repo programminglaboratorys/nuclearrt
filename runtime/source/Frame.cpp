@@ -114,6 +114,8 @@ void Frame::Draw()
 	for (unsigned int i = 0; i < Layers.size(); i++)
 	{
 		Layer& layer = Layers[i];
+		if (!layer.Visible) continue;
+		
 		bool hasLayerEffect = (layer.usePreviousLayerEffect && i > 0) || layer.Effect != 0 || layer.GetEffectParameter() != 0 || layer.RGBCoefficient != 0xFFFFFFFF;
 		if (!hasLayerEffect)
 		{
