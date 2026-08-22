@@ -20,6 +20,12 @@ public class LayerObjectExporter : ExtensionExporter
 
 		switch (conditionNum)
 		{
+			case 11:
+				result.AppendLine($"{ifStatement} {GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->IsLayerVisible(({EvaluateExpression(eventBase, 0)}).GetIntValue()-1)) goto {nextLabel};");
+				break;
+			case 12:
+				result.AppendLine($"{ifStatement} {GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->IsLayerVisible(({EvaluateExpression(eventBase, 0)}).GetStringValue())) goto {nextLabel};");
+				break;
 			default:
 				result.AppendLine($"// Layer Object condition {conditionNum} not implemented");
 				result.AppendLine($"goto {nextLabel};");
@@ -60,6 +66,18 @@ public class LayerObjectExporter : ExtensionExporter
 					string defaultValue = ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase);
 					result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->AltValueSort(true, {altIndex}, {defaultValue});");
 				}
+				break;
+			case 31:
+				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->ShowLayer(({EvaluateExpression(eventBase, 0)}).GetIntValue()-1);");
+				break;
+			case 32:
+				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->HideLayer(({EvaluateExpression(eventBase, 0)}).GetIntValue()-1);");
+				break;
+			case 36:
+				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->ShowLayer(({EvaluateExpression(eventBase, 0)}).GetStringValue());");
+				break;
+			case 37:
+				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->HideLayer(({EvaluateExpression(eventBase, 0)}).GetStringValue());");
 				break;
 			default:
 				result.AppendLine($"// Layer Object action {actionNum} not implemented");

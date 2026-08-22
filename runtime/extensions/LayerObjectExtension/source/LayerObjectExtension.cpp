@@ -11,6 +11,21 @@ void LayerObjectExtension::Initialize()
     currentLayer = Layer;
 }
 
+unsigned int LayerObjectExtension::GetLayerIndex(std::string layerName)
+{
+    for (unsigned int i = 0; i < Application::Instance().GetCurrentFrame().get()->Layers.size(); i++) {
+        if (Application::Instance().GetCurrentFrame().get()->Layers[i].Name == layerName) {
+            return i;
+        }
+    }
+    return 0;
+}
+
+bool LayerObjectExtension::IsLayerVisible(int layerIndex)
+{
+    return Application::Instance().GetCurrentFrame().get()->Layers[layerIndex].Visible;
+}
+
 void LayerObjectExtension::YSort(bool ascending)
 {
     auto& layer = Application::Instance().GetCurrentFrame().get()->Layers[currentLayer];
@@ -39,4 +54,14 @@ void LayerObjectExtension::AltValueSort(bool ascending, int altIndex, CValue def
 
         return ascending ? aValue < bValue : aValue > bValue;
     });
+}
+
+void LayerObjectExtension::ShowLayer(int layerIndex)
+{
+    Application::Instance().GetCurrentFrame().get()->Layers[layerIndex].Visible = true;
+}
+
+void LayerObjectExtension::HideLayer(int layerIndex)
+{
+    Application::Instance().GetCurrentFrame().get()->Layers[layerIndex].Visible = false;
 }
