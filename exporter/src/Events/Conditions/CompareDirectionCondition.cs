@@ -19,7 +19,7 @@ public class CompareDirectionCondition: ConditionBase
 		}
 		else
 		{
-			result.AppendLine($"    {ifStatement} ((({ExpressionConverter.GetObjectClassName(eventBase.ObjectInfo, eventBase.ObjectType)}*)instance)->animations.IsFacingDirection({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)}))) it.deselect();");
+			result.AppendLine($"    {ifStatement} ((({ExpressionConverter.GetObjectClassName(eventBase.ObjectInfo, eventBase.ObjectType)}*)instance)->animations.IsFacingDirection(({ConvertExpression(eventBase, 0)}).GetIntValue()))) it.deselect();");
 		}
 		result.AppendLine("}");
 

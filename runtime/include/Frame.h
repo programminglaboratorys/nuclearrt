@@ -222,28 +222,28 @@ public:
 	}
 
     inline CValue NewLine() { return CValue("\n"); }
-	CValue OAngle(ObjectInstance* instance, int xTarget, int yTarget) {
-		int distanceX  = xTarget - instance->GetX().GetIntValue();
-		int distanceY  = yTarget - instance->GetY().GetIntValue();
+	CValue OAngle(ObjectInstance* instance, const CValue& xTarget, const CValue& yTarget) {
+		int distanceX  = xTarget.GetIntValue() - instance->GetX().GetIntValue();
+		int distanceY  = yTarget.GetIntValue() - instance->GetY().GetIntValue();
 		int angle = static_cast<int>(atan2(-distanceY, distanceX) * 180 / 3.14159265358979323846);
 		angle = (angle + 360) % 360;
 		return CValue(angle);
 	}
 
-	CValue OAngle(ObjectSelector& selector, int xTarget, int yTarget) {
+	CValue OAngle(ObjectSelector& selector, const CValue& xTarget, const CValue& yTarget) {
 		if (selector.Count() == 0) {
 			return CValue(0);
 		}
 		return OAngle(*(selector.begin()), xTarget, yTarget);
 	}
 
-	CValue ODistance(ObjectInstance* instance, int xTarget, int yTarget) {
-		int distanceX = xTarget - instance->GetX().GetIntValue();
-		int distanceY = yTarget - instance->GetY().GetIntValue();
+	CValue ODistance(ObjectInstance* instance, const CValue& xTarget, const CValue& yTarget) {
+		int distanceX = xTarget.GetIntValue() - instance->GetX().GetIntValue();
+		int distanceY = yTarget.GetIntValue() - instance->GetY().GetIntValue();
 		return CValue(static_cast<int>(sqrt(distanceX * distanceX + distanceY * distanceY)));
 	}
 
-	CValue ODistance(ObjectSelector& selector, int xTarget, int yTarget) {
+	CValue ODistance(ObjectSelector& selector, const CValue& xTarget, const CValue& yTarget) {
 		if (selector.Count() == 0) {
 			return CValue(0);
 		}
