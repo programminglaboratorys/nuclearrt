@@ -90,6 +90,9 @@ void SDL3GraphicsBackend::Initialize() {
 	SDL_ShowWindow(window);
 #endif
 
+	if (Application::Instance().GetAppData()->GetFullscreenOnStart())
+		backend->GetPlatform()->SetFullscreen(true);
+
 #if !defined(PLATFORM_MACOS) && !defined(PLATFORM_WEB) && !defined(PLATFORM_IOS)
 	GLenum glewErr = glewInit();
 	if (glewErr != GLEW_OK)

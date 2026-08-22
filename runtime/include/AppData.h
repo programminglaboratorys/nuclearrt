@@ -30,6 +30,9 @@ public:
 	int GetBorderColor() const { return m_borderColor; }
 	void SetBorderColor(int color) { m_borderColor = color; }
 
+	bool& GetFullscreenOnStart() { return m_fullscreenOnStart; }
+	void SetFullscreenOnStart(bool fullscreen) { m_fullscreenOnStart = fullscreen; }
+	
 	bool& GetFitInside() { return m_fitInside; }
 	void SetFitInside(bool fit) { m_fitInside = fit; }
 
@@ -154,6 +157,7 @@ private:
 	int m_windowHeight = 480;
 	int m_targetFPS = 60;
 	int m_borderColor = 0;
+	bool m_fullscreenOnStart = false;
 	bool m_fitInside = false;
 	bool m_resizeDisplay = false;
 	bool m_antiAliasingWhenResizing = false;
