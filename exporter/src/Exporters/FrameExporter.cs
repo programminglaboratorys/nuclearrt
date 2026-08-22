@@ -187,6 +187,8 @@ public class FrameExporter : BaseExporter
 			{
 				uniqueHandles.Add(obj.objectInfo);
 				string objectName = GameData.frameitems[(int)obj.objectInfo].name;
+				int objectType = GameData.frameitems[(int)obj.objectInfo].ObjectType;
+				if (objectType == 0 || objectType == 1) continue;
 				eventObjects.AppendLine($"std::shared_ptr<ObjectSelector> {SanitizeObjectName(objectName)}_{obj.objectInfo}_selector;");
 			}
 		}
@@ -212,6 +214,8 @@ public class FrameExporter : BaseExporter
 			{
 				uniqueHandles.Add(obj.objectInfo);
 				string objectName = GameData.frameitems[(int)obj.objectInfo].name;
+				int objectType = GameData.frameitems[(int)obj.objectInfo].ObjectType;
+				if (objectType == 0 || objectType == 1) continue;
 				objectSelectorsInit.AppendLine($"{SanitizeObjectName(objectName)}_{obj.objectInfo}_selector = std::make_shared<ObjectSelector>(ObjectInstances, {obj.objectInfo}, false);");
 			}
 		}
