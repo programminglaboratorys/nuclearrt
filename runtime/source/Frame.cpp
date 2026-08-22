@@ -494,7 +494,7 @@ void Frame::DrawCounterNumbers(CounterBase *counter, int value, int x, int y)
 		}
 
 		int imageIndex = charMap.find(valueString[i]);
-		MaxHeight = std::max(MaxHeight, ImageBank::Instance().GetImage(counter->Frames[imageIndex])->Height);
+		MaxHeight = std::max((unsigned short)MaxHeight, ImageBank::Instance().GetImage(counter->Frames[imageIndex])->Height);
 	}
 
 	int currentX = x - totalWidth;
