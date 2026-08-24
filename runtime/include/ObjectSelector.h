@@ -35,6 +35,26 @@ public:
 			[](ObjectInstance* a, ObjectInstance* b) { return a->Handle < b->Handle; });
 	}
 
+	std::vector<ObjectInstance*> SaveSelection() {
+		EnsureSorted();
+		return SelectedInstances;
+	}
+
+	void RestoreSelection(const std::vector<ObjectInstance*>& snap) {
+		for (auto* obj : SelectedInstances) {
+			obj->isSelected = false;
+		}
+		SelectedInstances.clear();
+		for (auto* obj : snap) {
+			if (obj == nullptr) continue;
+			auto it = std::find(AllSelectorObjectInstances.begin(), AllSelectorObjectInstances.end(), obj);
+			if (it == AllSelectorObjectInstances.end()) continue;
+			obj->isSelected = true;
+			SelectedInstances.push_back(obj);
+		}
+		IsDirty = false;
+	}
+
 	// Called during a event to scope all objects that are relevant to the event
 	void Reset(ObjectInstance* restrictTo = nullptr) {
 		if (restrictTo) {

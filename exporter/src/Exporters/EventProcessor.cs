@@ -11,9 +11,15 @@ public class EventProcessor
 {
 	private readonly Exporter _exporter;
 
+	//child event shit
+	private readonly Dictionary<int, List<int>> _directChildIndices = new();
+	private readonly Dictionary<int, int> _parentOf = new();
+	private readonly Dictionary<int, List<Tuple<int, int, string>>> _oisPassedToChildren = new();
+	private readonly Dictionary<int, List<Tuple<int, int, string>>> _oisInheritedFromParent = new();
+
 	public enum EventLoopType
 	{
-		Timer,
+		Timer, // TODO: get rid of this, make them true events
 		Normal,
 	}
 
@@ -43,11 +49,6 @@ public class EventProcessor
 			var evt = _exporter.GameData.Frames[frameIndex].events.Items[j];
 			string eventName = GetEventName(evt);
 
-			for (int k = 0; k < evt.RestrictCpt; k++) //TODO: check if this is correct
-			{
-				result.Append("\t");
-			}
-
 			// TODO: if a group is empty, don't include it.
 			if (ShouldSkipEvent(evt))
 			{
@@ -57,12 +58,13 @@ public class EventProcessor
 				}
 				else if (new GroupEndCondition().Equals(evt.Conditions[0])) //if this event is a group end, don't include it in the main event update loop, just close the current group
 				{
-					result.Remove(result.Length - 1, 1); //Remove the last tab
 					result.Append("}\n");
 				}
 
 				continue;
 			}
+
+			if (IsChildEvent(j)) continue;
 
 			//only add event to normal event loop if it doesn't have a loop condition
 			if (DoesEventHaveLoop(evt) == null && !IsTrueEvent(evt, frameIndex))
@@ -104,8 +106,20 @@ public class EventProcessor
 			int orConditionIndex = 0;
 			string nextLabel = GenerateEventNextLabel(evt, 0, numberOfOrConditions);
 			string idName = GetEventBaseName(evt);
+			List<Tuple<int, int, string>> inheritedSelectors = _oisInheritedFromParent.GetValueOrDefault(j) ?? [];
+			List<int> childIndices = _directChildIndices.GetValueOrDefault(j) ?? [];
+			bool hasChildren = childIndices.Count > 0;
+			string endLabel = $"{idName}_end";
 
-			List<Tuple<int, int, string>> usedSelectors = new List<Tuple<int, int, string>>(); // if a selector has already been reset during this event, don't reset it again
+			List<Tuple<int, int, string>> usedSelectors = [.. inheritedSelectors]; // if a selector has already been reset during this event, don't reset it again
+
+			if (numberOfOrConditions > 0)
+			{
+				foreach (var inherited in inheritedSelectors)
+				{
+					result.AppendLine($"std::vector<ObjectInstance*> __entry_{StringUtils.SanitizeObjectName(inherited.Item3)}_{inherited.Item1} = {StringUtils.SanitizeObjectName(inherited.Item3)}_{inherited.Item1}_selector.SaveSelection();");
+				}
+			}
 
 			foreach (var condition in evt.Conditions)
 			{
@@ -136,6 +150,7 @@ public class EventProcessor
 					continue;
 				}
 
+				//TODO: move these to a struct
 				Dictionary<string, object> parameters = new Dictionary<string, object>()
 				{
 					{ "eventIndex", j },
@@ -143,7 +158,8 @@ public class EventProcessor
 					{ "frameIndex", frameIndex },
 					{ "eventGroup", evt },
 					{ "numOfOrs", numberOfOrConditions },
-					{ "negatedIfStatement", (condition.OtherFlags & 1) == 0 ? "if (" : "if (!" }
+					{ "negatedIfStatement", (condition.OtherFlags & 1) == 0 ? "if (" : "if (!" },
+					{ "inheritedSelectors", inheritedSelectors }
 				};
 
 				var instance = Activator.CreateInstance(acBaseType) as ConditionBase;
@@ -152,7 +168,6 @@ public class EventProcessor
 				result.AppendLine(instance?.Build(condition, ref nextLabel, ref orConditionIndex, parameters, ifStatement));
 			}
 
-			string endLabel = $"{idName}_end";
 			result.AppendLine($"{idName}_actions:;");
 
 			if (DoesEventHaveOneActionLoop(evt))
@@ -203,6 +218,13 @@ public class EventProcessor
 				result.AppendLine(instance?.Build(action, ref nextLabel, ref orConditionIndex, parameters, ""));
 			}
 
+			if (hasChildren)
+			{
+				result.AppendLine("{");
+				result.Append(BuildChildEventCalls(frameIndex, j, childIndices));
+				result.AppendLine("}");
+			}
+
 			result.AppendLine($"{endLabel}:;");
 
 			if (DoesEventHaveOneActionLoop(evt))
@@ -223,7 +245,7 @@ public class EventProcessor
 			for (int j = 0; j < _exporter.GameData.Frames[frameIndex].events.Items.Count; j++)
 			{
 				var evt = _exporter.GameData.Frames[frameIndex].events.Items[j];
-				if (ShouldSkipEvent(evt)) continue;
+				if (ShouldSkipEvent(evt) || IsChildEvent(j)) continue;
 
 				foreach (var condition in evt.Conditions)
 				{
@@ -504,7 +526,7 @@ public class EventProcessor
 				continue;
 			}
 
-			if (!IsTrueEvent(evt, frameIndex)) continue;
+			if (IsChildEvent(j) || !IsTrueEvent(evt, frameIndex)) continue;
 
 			var first = evt.Conditions[0];
 			result.Append($"\tif (objectType == {first.ObjectType} && conditionNum == {first.Num}");
@@ -606,9 +628,131 @@ public class EventProcessor
 
 	public void PreProcessFrame(int frameIndex)
 	{
-		var frame = _exporter.GameData.Frames[frameIndex];
+		_directChildIndices.Clear();
+		_parentOf.Clear();
+		_oisPassedToChildren.Clear();
+		_oisInheritedFromParent.Clear();
 
-		// was used for global events, probably no longer needed
+		var frame = _exporter.GameData.Frames[frameIndex];
+		if (frame.events?.Items == null) return;
+
+		var items = frame.events.Items;
+
+		for (int i = 0; i < items.Count; i++)
+		{
+			var evt = items[i];
+			if (ShouldSkipEvent(evt))
+			{
+				_directChildIndices[i] = [];
+				_oisPassedToChildren[i] = [];
+				continue;
+			}
+
+			var children = ComputeDirectChildIndices(i, items);
+			_directChildIndices[i] = children;
+
+			foreach (int childIndex in children)
+			{
+				_parentOf[childIndex] = i;
+			}
+
+			var passedOis = GetChildEventObjectInfos(evt);
+			if (passedOis.Count == 0 && children.Count > 0)
+			{
+				passedOis = GetRelevantObjectInfos(evt);
+			}
+			_oisPassedToChildren[i] = passedOis;
+		}
+
+		for (int i = 0; i < items.Count; i++)
+		{
+			if (_parentOf.TryGetValue(i, out int parentIndex))
+				_oisInheritedFromParent[i] = _oisPassedToChildren[parentIndex];
+			else
+				_oisInheritedFromParent[i] = [];
+		}
+	}
+
+	string BuildChildEventCalls(int frameIndex, int parentIndex, List<int> childIndices)
+	{
+		var result = new StringBuilder();
+		var items = _exporter.GameData.Frames[frameIndex].events.Items;
+		var passedSelectors = _oisPassedToChildren.GetValueOrDefault(parentIndex) ?? [];
+
+		foreach (var selector in passedSelectors)
+		{
+			result.AppendLine($"std::vector<ObjectInstance*> __child_{StringUtils.SanitizeObjectName(selector.Item3)}_{selector.Item1} = {StringUtils.SanitizeObjectName(selector.Item3)}_{selector.Item1}_selector.SaveSelection();");
+		}
+
+		foreach (int childIndex in childIndices)
+		{
+			foreach (var selector in passedSelectors)
+			{
+				result.AppendLine($"{StringUtils.SanitizeObjectName(selector.Item3)}_{selector.Item1}_selector.RestoreSelection(__child_{StringUtils.SanitizeObjectName(selector.Item3)}_{selector.Item1});");
+			}
+			result.AppendLine($"{GetEventName(items[childIndex])}();");
+		}
+
+		return result.ToString();
+	}
+
+	List<int> ComputeDirectChildIndices(int parentIndex, List<EventGroup> items)
+	{
+		int parentDepth = items[parentIndex].RestrictCpt;
+		var children = new List<int>();
+
+		for (int i = parentIndex + 1; i < items.Count; i++)
+		{
+			int depth = items[i].RestrictCpt;
+			if (depth <= parentDepth) break;
+
+			if (depth == parentDepth + 1 && !ShouldSkipEvent(items[i]) && (items[i].Flags & 0x8000) != 0)
+			{
+				children.Add(i);
+			}
+		}
+
+		return children;
+	}
+
+	static List<Tuple<int, int, string>> GetChildEventObjectInfos(EventGroup evt)
+	{
+		var result = new List<Tuple<int, int, string>>();
+
+		foreach (var condition in evt.Conditions)
+		{
+			foreach (var param in condition.Items)
+			{
+				if (param.Loader is not ChildEvent childEvent || childEvent.ois == null) continue;
+
+				for (int i = 0; i + 1 < childEvent.ois.Length; i += 2)
+				{
+					var resolved = ResolveChildEventOi((ushort)childEvent.ois[i], childEvent.ois[i + 1]);
+					if (resolved != null) result.Add(resolved);
+				}
+			}
+		}
+
+		return result.Distinct().ToList();
+	}
+
+	static Tuple<int, int, string>? ResolveChildEventOi(int objectInfo, int second)
+	{
+		if (objectInfo == ushort.MaxValue) return null;
+
+		if (objectInfo > short.MaxValue)
+		{
+			int objectType = second > 0 ? second : 2;
+			string qualifierName = Utilities.GetQualifierName(objectInfo & 0x7FFF, objectType);
+			return new Tuple<int, int, string>(objectInfo, objectType, qualifierName);
+		}
+
+		if (!Exporter.Instance.GameData.frameitems.TryGetValue(objectInfo, out ObjectInfo? evtObj) || evtObj == null)
+		{
+			return null;
+		}
+
+		return new Tuple<int, int, string>(objectInfo, evtObj.ObjectType, evtObj.name);
 	}
 
 	// utilities
@@ -628,5 +772,10 @@ public class EventProcessor
 	{
 		if (orConditionIndex < totalOrs) return $"{GetEventBaseName(evt)}_or_{orConditionIndex}";
 		return $"{GetEventBaseName(evt)}_end";
+	}
+
+	bool IsChildEvent(int eventIndex)
+	{
+		return _parentOf.ContainsKey(eventIndex);
 	}
 }
