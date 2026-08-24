@@ -99,6 +99,7 @@ namespace MathHelper {
 
     // math utility helpers
     inline double Distance(double x1, double y1, double x2, double y2) { return std::sqrt(std::pow(x2 - x1, 2) + std::pow(y2 - y1, 2)); }
+    inline CValue Distance(const CValue& x1, const CValue& y1, const CValue& x2, const CValue& y2) { return Distance(x1.GetDoubleValue(), y1.GetDoubleValue(), x2.GetDoubleValue(), y2.GetDoubleValue()); }
     
     inline double VAngle(double x, double y) { 
         double angle = ToDegrees(std::atan2(-y, x));
