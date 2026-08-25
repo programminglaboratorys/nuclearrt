@@ -300,11 +300,9 @@ void SDL3GraphicsBackend::Deinitialize()
 		quadVBO = 0;
 	}
 
-	for (int i = 0; i < STANDARD_EFFECT_COUNT; i++) {
-		if (effectShaders[i].program != 0) {
-			glDeleteProgram(effectShaders[i].program);
-			effectShaders[i].program = 0;
-		}
+	if (defaultShader.program != 0) {
+		glDeleteProgram(defaultShader.program);
+		defaultShader.program = 0;
 	}
 
 	if (colorShaderProgram != 0)
@@ -396,7 +394,7 @@ void SDL3GraphicsBackend::BeginDrawing()
 		return;
 	}
 
-	currentEffect = -1;
+	currentInkEffect = -1;
 
 	// resize render target if needed
 	logicalRenderWidth = std::min(Application::Instance().GetAppData()->GetWindowWidth(), Application::Instance().GetCurrentFrame()->Width);
@@ -453,18 +451,17 @@ void SDL3GraphicsBackend::EndDrawing()
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	UseEffectShader(0);
-	EffectShader &shader = effectShaders[0];
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, renderTargetTexture);
-	glUniform1i(shader.texLoc, 0);
-	glUniform4f(shader.colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	glUniform1i(defaultShader.texLoc, 0);
+	glUniform4f(defaultShader.colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	float mvp[16] = {
 		2.0f * rect.w / windowWidth, 0.0f, 0.0f, 0.0f,
 		0.0f, 2.0f * rect.h / windowHeight, 0.0f, 0.0f,
 		0.0f, 0.0f, -1.0f, 0.0f,
 		2.0f * rect.x / windowWidth - 1.0f, -(2.0f * rect.y / windowHeight - 1.0f) - 2.0f * rect.h / windowHeight, 0.0f, 1.0f};
-	glUniformMatrix4fv(shader.mvpLoc, 1, GL_FALSE, mvp);
+	glUniformMatrix4fv(defaultShader.mvpLoc, 1, GL_FALSE, mvp);
 
 	float presentVerts[] = {
 		0.0f, 0.0f, 0.0f, 0.0f,
@@ -623,44 +620,25 @@ void SDL3GraphicsBackend::CreateStandardShaders()
 		return;
 	}
 
-	// guh
-	const char *effectFiles[STANDARD_EFFECT_COUNT] = {
-		"shaders/standard/normal.frag",
-		nullptr,
-		"shaders/standard/inverted.frag",
-		nullptr,
-		nullptr,
-		nullptr,
-		nullptr,
-		nullptr,
-		nullptr,
-		nullptr, // "shaders/standard/add.frag" is supposed to be in the pak file, but it's not so it's very funny. -indeednotfunny
-		"shaders/standard/monochrome.frag",
-		nullptr, // same here with subtract.frag -- "shaders/standard/subtract.frag" -indeednotfunny
-		nullptr};
-
-	for (int i = 0; i < STANDARD_EFFECT_COUNT; i++)
+	// load default shader
+	std::string fragSrc = LoadShaderSource("shaders/standard/normal.frag");
+	if (fragSrc.empty())
 	{
-		// fallback the normal shader
-		const char *fragFile = effectFiles[i] ? effectFiles[i] : effectFiles[0];
-		std::string fragSrc = LoadShaderSource(fragFile);
-		if (fragSrc.empty())
-		{
-			backend->GetPlatform()->Log("Failed to load fragment shader: " + std::string(fragFile));
-			continue;
-		}
-
-		effectShaders[i].program = CreateShaderProgram(vertexSrc.c_str(), fragSrc.c_str());
-		if (effectShaders[i].program == 0)
-		{
-			backend->GetPlatform()->Log("Failed to create effect shader " + std::to_string(i));
-			continue;
-		}
-
-		effectShaders[i].mvpLoc = glGetUniformLocation(effectShaders[i].program, "uMVP");
-		effectShaders[i].texLoc = glGetUniformLocation(effectShaders[i].program, "uTexture");
-		effectShaders[i].colorLoc = glGetUniformLocation(effectShaders[i].program, "uColor");
+		backend->GetPlatform()->Log("Failed to load normal shader");
+		return;
 	}
+
+	defaultShader.program = CreateShaderProgram(vertexSrc.c_str(), fragSrc.c_str());
+	if (defaultShader.program == 0)
+	{
+		backend->GetPlatform()->Log("Failed to create default shader");
+		return;
+	}
+
+	defaultShader.mvpLoc = glGetUniformLocation(defaultShader.program, "uMVP");
+	defaultShader.texLoc = glGetUniformLocation(defaultShader.program, "uTexture");
+	defaultShader.colorLoc = glGetUniformLocation(defaultShader.program, "uColor");
+	defaultShaderInkEffectLoc = glGetUniformLocation(defaultShader.program, "uInkEffect");
 
 	// load color shaders for shapes and shit
 	std::string colorFragSrc = LoadShaderSource("shaders/standard/color.frag");
@@ -728,13 +706,17 @@ void SDL3GraphicsBackend::UseEffectShader(int effect)
 		effect = 0;
 	}
 
-	if (currentEffect == effect && currentEffect >= 0)
-	{
-		return;
-	}
+	if (currentInkEffect < 0) // third party shader
+		glUseProgram(defaultShader.program);
 
-	currentEffect = effect;
-	glUseProgram(effectShaders[effect].program);
+	if (currentInkEffect != effect)
+	{
+		if (defaultShaderInkEffectLoc >= 0)
+		{
+			glUniform1i(defaultShaderInkEffectLoc, effect);
+		}
+		currentInkEffect = effect;
+	}
 }
 
 void SDL3GraphicsBackend::CreateRenderTarget(int width, int height)
@@ -853,7 +835,7 @@ void SDL3GraphicsBackend::ApplyEffectParameters(EffectInstance *effectInstance, 
 		if (shader != nullptr)
 		{
 			glUseProgram(shader->program);
-			currentEffect = -1;
+			currentInkEffect = -1;
 			program = shader->program;
 			texLoc = shader->texLoc;
 			colorLoc = shader->colorLoc;
@@ -893,10 +875,9 @@ void SDL3GraphicsBackend::ApplyEffectParameters(EffectInstance *effectInstance, 
 	if (program == 0)
 	{
 		UseEffectShader(effect);
-		EffectShader &shader = effectShaders[effect];
-		program = shader.program;
-		texLoc = shader.texLoc;
-		colorLoc = shader.colorLoc;
+		program = defaultShader.program;
+		texLoc = defaultShader.texLoc;
+		colorLoc = defaultShader.colorLoc;
 	}
 
 	if (textureId != 0)
@@ -939,10 +920,9 @@ void SDL3GraphicsBackend::RenderQuad(float x, float y, float w, float h, float a
 
 	GLint mvpLoc = -1;
 	// check effect shaders
-	if (currentEffect >= 0 && currentEffect < STANDARD_EFFECT_COUNT &&
-		static_cast<GLuint>(currentProgram) == effectShaders[currentEffect].program)
+	if (currentInkEffect >= 0 && static_cast<GLuint>(currentProgram) == defaultShader.program)
 	{
-		mvpLoc = effectShaders[currentEffect].mvpLoc;
+		mvpLoc = defaultShader.mvpLoc;
 	}
 	else if (static_cast<GLuint>(currentProgram) == colorShaderProgram)
 	{
@@ -1178,7 +1158,7 @@ void SDL3GraphicsBackend::DrawQuickBackdrop(int x, int y, int width, int height,
 		if (shape->FillType == 1)
 		{ // Solid Color
 			glUseProgram(colorShaderProgram);
-			currentEffect = -1;
+			currentInkEffect = -1;
 			glUniform4f(colorShaderColorLoc, ((shape->Color1 >> 16) & 0xFF) / 255.0f, ((shape->Color1 >> 8) & 0xFF) / 255.0f, (shape->Color1 & 0xFF) / 255.0f, 1.0f);
 			glUniform1i(colorShaderCircleClipLoc, shape->ShapeType == 3);
 			RenderQuad(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height));
@@ -1194,7 +1174,7 @@ void SDL3GraphicsBackend::DrawQuickBackdrop(int x, int y, int width, int height,
 			float b2 = (shape->Color2 & 0xFF) / 255.0f;
 
 			glUseProgram(gradientShaderProgram);
-			currentEffect = -1;
+			currentInkEffect = -1;
 			glUniform4f(gradientShaderColor1Loc, r1, g1, b1, 1.0f);
 			glUniform4f(gradientShaderColor2Loc, r2, g2, b2, 1.0f);
 			glUniform1i(gradientShaderVerticalLoc, shape->VerticalGradient ? 1 : 0);
@@ -1212,7 +1192,7 @@ void SDL3GraphicsBackend::DrawQuickBackdrop(int x, int y, int width, int height,
 			GLTexture &texture = texIt->second;
 
 			glUseProgram(textureQuickbackdropShaderProgram);
-			currentEffect = -1;
+			currentInkEffect = -1;
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, texture.textureId);
 			glUniform1i(textureQuickbackdropShaderTextureLoc, 0);
@@ -1333,7 +1313,7 @@ void SDL3GraphicsBackend::DrawCounterBar(int x, int y, Counter *counter)
 	}
 
 	glUseProgram(gradientShaderProgram);
-	currentEffect = -1;
+	currentInkEffect = -1;
 	glUniform4f(gradientShaderColor1Loc, r1, g1, b1, 1.0f);
 	glUniform4f(gradientShaderColor2Loc, r2, g2, b2, 1.0f);
 	glUniform1i(gradientShaderCircleClipLoc, 0);
@@ -1359,11 +1339,10 @@ void SDL3GraphicsBackend::DrawBitmap(Bitmap &bitmap, int x, int y)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, bitmap.GetWidth(), bitmap.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, bitmap.GetData());
 
 	UseEffectShader(0);
-	EffectShader &shader = effectShaders[0];
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tempTexture);
-	glUniform1i(shader.texLoc, 0);
-	glUniform4f(shader.colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+	glUniform1i(defaultShader.texLoc, 0);
+	glUniform4f(defaultShader.colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 
 	RenderQuad(static_cast<float>(x), static_cast<float>(y), static_cast<float>(bitmap.GetWidth()), static_cast<float>(bitmap.GetHeight()), 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f);
 	glDeleteTextures(1, &tempTexture);
@@ -1424,17 +1403,16 @@ void SDL3GraphicsBackend::DrawEffectRect(int x, int y, int width, int height, in
 			glClear(GL_COLOR_BUFFER_BIT);
 
 			UseEffectShader(0);
-			EffectShader &shader = effectShaders[0];
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, renderTargetTexture);
-			glUniform1i(shader.texLoc, 0);
-			glUniform4f(shader.colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+			glUniform1i(defaultShader.texLoc, 0);
+			glUniform4f(defaultShader.colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 			RenderQuad(0.0f, 0.0f, static_cast<float>(logicalRenderWidth), static_cast<float>(logicalRenderHeight), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, layerRenderTargetTexture);
-			glUniform1i(shader.texLoc, 0);
-			glUniform4f(shader.colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
+			glUniform1i(defaultShader.texLoc, 0);
+			glUniform4f(defaultShader.colorLoc, 1.0f, 1.0f, 1.0f, 1.0f);
 			RenderQuad(0.0f, 0.0f, static_cast<float>(logicalRenderWidth), static_cast<float>(logicalRenderHeight), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
 
 			copyFramebuffer = composedFramebuffer;
@@ -1455,9 +1433,26 @@ void SDL3GraphicsBackend::DrawEffectRect(int x, int y, int width, int height, in
 	glBindFramebuffer(GL_FRAMEBUFFER, drawingLayer ? layerRenderTarget : renderTarget);
 	glViewport(0, 0, renderTargetWidth, renderTargetHeight);
 
+	bool needsBlendRestore = false;
+	if (effect == 9) // Add
+	{
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE);
+		needsBlendRestore = true;
+	}
+	else if (effect == 11) // Subtract
+	{
+		glBlendFuncSeparate(GL_ZERO, GL_ONE_MINUS_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		needsBlendRestore = true;
+	}
+
 	ApplyEffectParameters(effectInstance, pixelSrcW, pixelSrcH, rgbCoefficient, effect, effectParameter, tempTexture);
 
 	RenderQuad(static_cast<float>(srcX), static_cast<float>(srcY), static_cast<float>(srcW), static_cast<float>(srcH), 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f);
+
+	if (needsBlendRestore)
+	{
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	}
 
 	glDeleteTextures(1, &tempTexture);
 	if (composedFramebuffer != 0)
@@ -1703,9 +1698,26 @@ void SDL3GraphicsBackend::DrawText(FontInfo *fontInfo, int x, int y, int width, 
 		y += height - textureHeight;
 	}
 
+	bool needsBlendRestore = false;
+	if (effect == 9) // Add
+	{
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ONE, GL_ONE);
+		needsBlendRestore = true;
+	}
+	else if (effect == 11) // Subtract
+	{
+		glBlendFuncSeparate(GL_ZERO, GL_ONE_MINUS_SRC_COLOR, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		needsBlendRestore = true;
+	}
+
 	ApplyEffectParameters(effectInstance, textureWidth, textureHeight, rgbCoefficient, effect, effectParameter, texture.textureId);
 
 	RenderQuad(static_cast<float>(x), static_cast<float>(y), static_cast<float>(textureWidth), static_cast<float>(textureHeight));
+
+	if (needsBlendRestore)
+	{
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+	}
 }
 
 void SDL3GraphicsBackend::RemoveOldTextCache()

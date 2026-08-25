@@ -92,9 +92,10 @@ private:
 #endif
 
 	static const int STANDARD_EFFECT_COUNT = 13;
-	EffectShader effectShaders[STANDARD_EFFECT_COUNT];
-	int currentEffect = -1;
-	
+	EffectShader defaultShader;
+	GLint defaultShaderInkEffectLoc = -1;
+	int currentInkEffect = -1;
+
 	GLuint colorShaderProgram = 0;
 	GLint colorShaderMVPLoc = -1;
 	GLint colorShaderColorLoc = -1;
