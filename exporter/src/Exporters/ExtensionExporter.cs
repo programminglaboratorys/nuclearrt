@@ -19,6 +19,7 @@ public static class ExtensionExporterRegistry
 		new IniPlusPlusExporter(),
 		new EasingObjectExporter(),
 		new XBOXGamepadExporter(),
+		new CrasherExporter(),
 	];
 
 	public static ExtensionExporter GetExporter(string extensionName)
