@@ -33,7 +33,7 @@ public class PlaySampleAllParameters : ActionBase
 	public override int Num { get; set; } = 36;
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
 	{
-		return $"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}).GetIntValue(), ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[2].Loader, eventBase)}).ToIntValue(), {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[5].Loader, eventBase)}.ToIntValue(), {CheckType.GetUninterruptable(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[3].Loader, eventBase)}.ToIntValue(), {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[4].Loader, eventBase)}.ToIntValue());";
+		return $"Application::Instance().GetBackend()->audio->PlaySample({CheckType.Check(eventBase)}, ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)}).GetIntValue(), ({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[2].Loader, eventBase)}).GetIntValue(), {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[5].Loader, eventBase)}.GetIntValue(), {CheckType.GetUninterruptable(eventBase)}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[3].Loader, eventBase)}.GetIntValue(), {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[4].Loader, eventBase)}.GetIntValue());";
 	}
 }
 public class CheckType
