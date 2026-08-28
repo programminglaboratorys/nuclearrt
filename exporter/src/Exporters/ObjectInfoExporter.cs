@@ -133,9 +133,9 @@ public class ObjectInfoExporter : BaseExporter
 		else
 		{
 			if (objectInfo.InkEffect == 0 || objectInfo.InkEffect == 10)
-				result.AppendLine($"instance->SetEffectParameter({Math.Clamp(objectInfo.blend, (byte)0, (byte)255)});");
+				result.AppendLine($"instance->SetBlendCoefficient({Math.Clamp(objectInfo.blend, (byte)0, (byte)255)});");
 			else
-				result.AppendLine($"instance->SetEffectParameter({Math.Clamp(objectInfo.InkEffectValue * 2, 0, 255)});");
+				result.AppendLine($"instance->SetBlendCoefficient({Math.Clamp(objectInfo.InkEffectValue * 2, 0, 255)});");
 
 		}
 

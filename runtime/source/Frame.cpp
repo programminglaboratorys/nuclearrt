@@ -297,7 +297,7 @@ void Frame::DrawLayer(Layer& layer)
 
 			Application::Instance().GetBackend()->graphics->DrawTexture(
 				imageId, instance->GetX().GetIntValue() - (scrollX * layer.XCoefficient), instance->GetY().GetIntValue() - (scrollY * layer.YCoefficient),
-				0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetEffectParameter().GetIntValue(), instance->effectInstance);
+				0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
 		}
 		else if (instance->Type == 2)
 		{
@@ -328,7 +328,7 @@ void Frame::DrawLayer(Layer& layer)
 				Application::Instance().GetBackend()->graphics->DrawTexture(
 					imageId, instance->GetX().GetIntValue() - scrollX, instance->GetY().GetIntValue() - scrollY,
 					imageInfo->HotspotX, imageInfo->HotspotY, 
-					angle, ((Active*)instance)->GetXScale().GetDoubleValue(), ((Active*)instance)->GetYScale().GetDoubleValue(), instance->RGBCoefficient, instance->Effect, instance->GetEffectParameter().GetIntValue(), instance->effectInstance);
+					angle, ((Active*)instance)->GetXScale().GetDoubleValue(), ((Active*)instance)->GetYScale().GetDoubleValue(), instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
 			}
 		}
 		else if (instance->Type == 3) // Text
@@ -349,7 +349,7 @@ void Frame::DrawLayer(Layer& layer)
 				instance->Handle,
 				instance->RGBCoefficient,
 				instance->Effect,
-				instance->GetEffectParameter().GetIntValue(),
+				instance->GetBlendCoefficient().GetIntValue(),
 				instance->effectInstance
 			);
 		}
@@ -385,7 +385,7 @@ void Frame::DrawLayer(Layer& layer)
 							y += imageHeight;
 						}
 
-						Application::Instance().GetBackend()->graphics->DrawTexture(counter->Frames[0], x, y, 0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetEffectParameter().GetIntValue(), instance->effectInstance);
+						Application::Instance().GetBackend()->graphics->DrawTexture(counter->Frames[0], x, y, 0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
 						x += imageWidth;
 					}
 				}
@@ -414,7 +414,7 @@ void Frame::DrawLayer(Layer& layer)
 					
 					imageID = counter->Frames[frameIndex];
 
-					Application::Instance().GetBackend()->graphics->DrawTexture(imageID, instance->GetX().GetIntValue() - scrollX, instance->GetY().GetIntValue() - scrollY, 0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetEffectParameter().GetIntValue(), instance->effectInstance);
+					Application::Instance().GetBackend()->graphics->DrawTexture(imageID, instance->GetX().GetIntValue() - scrollX, instance->GetY().GetIntValue() - scrollY, 0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
 				}
 			}
 		}
@@ -513,7 +513,7 @@ void Frame::DrawCounterNumbers(CounterBase *counter, int value, int x, int y)
 		{
 			Application::Instance().GetBackend()->graphics->DrawTexture(
 				counter->Frames[imageIndex], currentX, y - MaxHeight,
-				0, 0, 0, 1.0f, 1.0f, counter->RGBCoefficient, counter->Effect, counter->GetEffectParameter().GetIntValue(), counter->effectInstance);
+				0, 0, 0, 1.0f, 1.0f, counter->RGBCoefficient, counter->Effect, counter->GetBlendCoefficient().GetIntValue(), counter->effectInstance);
 			currentX += imageInfo->Width;
 		}
 	}

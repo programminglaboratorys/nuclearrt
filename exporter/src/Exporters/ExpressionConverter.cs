@@ -239,9 +239,9 @@ public class ExpressionConverter
 			case 27: // Alpha Coefficient
 				{
 					if (UseInstance(expression, eventBase))
-						return stringBuilder.Append("instance->GetEffectParameter()");
+						return stringBuilder.Append("instance->GetBlendCoefficient()");
 					else
-						return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (*{objectSelector}.begin())->GetEffectParameter() : 0)");
+						return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (*{objectSelector}.begin())->GetBlendCoefficient() : 0)");
 				}
 			case 28: // RGBCoef
 				{

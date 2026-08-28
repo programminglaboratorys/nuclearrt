@@ -13,7 +13,7 @@ public class SetAlphaCoeffAction : ActionBase
 
 		result.AppendLine($"for (ObjectIterator it({GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");
-		result.AppendLine($"    instance->SetEffectParameter({ConvertExpression(eventBase, 0)});");
+		result.AppendLine($"    instance->SetBlendCoefficient({ConvertExpression(eventBase, 0)});");
 		result.AppendLine("}");
 
 		return result.ToString();

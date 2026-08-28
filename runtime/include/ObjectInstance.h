@@ -56,7 +56,7 @@ public:
         collisionBoundsDirty = true;
     }
 
-    int RGBCoefficient = 0xFFFFFF;
+    int RGBCoefficient = 0xFFFFFFFF;
     int Effect = 0;
     EffectInstance* effectInstance = nullptr;
 
@@ -68,14 +68,7 @@ public:
 
     bool collisionBoundsDirty = true;
     CollisionInstanceBounds collisionBounds = {0};
-private:
-    unsigned char EffectParameter = 0;
 public:
-
-
-    CValue GetEffectParameter() const {
-        return CValue(EffectParameter);
-    }
 
     CValue GetEffectInstanceParameter(const CValue& name) const {
         if (effectInstance == nullptr)
@@ -88,9 +81,14 @@ public:
             return;
         effectInstance->SetParameter(name.GetStringValue(), value);
     }
-    
-    void SetEffectParameter(const CValue& effectParameter) {
-        EffectParameter = static_cast<unsigned char>(std::clamp(effectParameter.GetIntValue(), 0, 255));
+
+    CValue GetBlendCoefficient() const {
+        int effectParameter = (RGBCoefficient >> 24) & 0xFF;
+        return CValue(effectParameter);
+    }
+
+    void SetBlendCoefficient(const CValue& blendCoefficient) {
+        RGBCoefficient = (RGBCoefficient & 0x00FFFFFF) | (std::clamp(blendCoefficient.GetIntValue(), 0, 255) << 24);
     }
     
     unsigned int GetAngle() const {
