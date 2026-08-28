@@ -224,7 +224,7 @@ void SDL3GraphicsBackend::Initialize() {
 
 						if (ImGui::TreeNode("Effect")) {
 							ImGui::Text("Effect: %d", instance->Effect);
-							ImGui::Text("Effect Parameter: %d", instance->GetEffectParameter());
+							ImGui::Text("Effect Parameter: %d", instance->GetEffectParameter().GetIntValue());
 							ImGui::TreePop();
 						}
 
