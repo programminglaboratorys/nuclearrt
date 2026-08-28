@@ -30,6 +30,10 @@ public:
 			return CValue(0);
 		return Values[index];
 	}
+
+	CValue GetValue(const CValue& index) const {
+		return GetValue(index.GetIntValue());
+	}
 private:
 	std::vector<CValue> Values;
 };
