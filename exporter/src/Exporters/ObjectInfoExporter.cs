@@ -199,6 +199,10 @@ public class ObjectInfoExporter : BaseExporter
 			var common = (ObjectCommon)objectInfo.properties;
 			result.AppendLine($"((StringObject*)instance)->FollowFrame = {(!common.Flags.GetFlag("ScrollingIndependant")).ToString().ToLower()};");
 			result.AppendLine(BuildParagraphs((ObjectCommon)objectInfo.properties));
+
+			result.AppendLine($"((StringObject*)instance)->Values = {BuildAlterableValues(common)};");
+			result.AppendLine($"((StringObject*)instance)->Strings = {BuildAlterableStrings(common)};");
+			result.AppendLine($"((StringObject*)instance)->Flags = {BuildAlterableFlags(common)};");
 		}
 		else if (objectInfo.ObjectType == 5 || objectInfo.ObjectType == 6 || objectInfo.ObjectType == 7)
 		{

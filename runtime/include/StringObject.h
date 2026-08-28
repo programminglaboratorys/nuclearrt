@@ -22,6 +22,10 @@ public:
 
 	int CurrentParagraph = 0;
 	std::string AlterableText;
+
+	AlterableValues Values;
+	AlterableStrings Strings;
+	AlterableFlags Flags;
 	
 	CValue GetText()
 	{
