@@ -1496,7 +1496,7 @@ void SDL3GraphicsBackend::LoadFont(int id)
 		std::shared_ptr<std::vector<uint8_t>> buffer = std::make_shared<std::vector<uint8_t>>(backend->platform->GetPakFile().GetData("fonts/" + fontInfo->FontFileName));
 		if (buffer->empty())
 		{
-			backend->GetPlatform()->Log("PakFile::GetData Error: Font with file name " + fontInfo->FontFileName + " not found");
+			backend->GetPlatform()->Log("PakFile::GetData Error: Font " + fontInfo->FontName + " with file name \"" + fontInfo->FontFileName + "\" not found");
 			return;
 		}
 		stream = SDL_IOFromMem(buffer->data(), buffer->size());
