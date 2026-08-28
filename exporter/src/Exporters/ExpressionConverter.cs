@@ -232,9 +232,9 @@ public class ExpressionConverter
 			case 23: // Layer
 				{
 					if (UseInstance(expression, eventBase))
-						return stringBuilder.Append("instance->Layer");
+						return stringBuilder.Append("CValue(instance->Layer)");
 					else
-						return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (*{objectSelector}.begin())->Layer : 0)");
+						return stringBuilder.Append($"({objectSelector}.Count() > 0 ? CValue((*{objectSelector}.begin())->Layer) : CValue(0))");
 				}
 			case 27: // Alpha Coefficient
 				{
