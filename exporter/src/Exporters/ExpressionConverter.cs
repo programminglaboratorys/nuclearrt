@@ -128,7 +128,7 @@ public class ExpressionConverter
 		{ (ObjectType.System, 28), _ => "std::trunc(" }, // Int
 		{ (ObjectType.System, 29), _ => "MathHelper::Abs(" }, // Abs(
 		{ (ObjectType.System, 30), _ => "std::ceil(" }, // Ceil
-		{ (ObjectType.System, 31), _ => "std::floor(" }, // Floor
+		{ (ObjectType.System, 31), _ => "MathHelper::Floor(" }, // Floor
 		{ (ObjectType.System, 32), _ => "MathHelper::ACos(" }, // ACos
 		{ (ObjectType.System, 33), _ => "MathHelper::ASin(" }, // ASin
 		{ (ObjectType.System, 34), _ => "MathHelper::ATan(" }, // ATan
