@@ -40,4 +40,21 @@ public:
             }
         }
     }
+
+    CValue GetParameter(const CValue& name)
+    {
+        for (auto& parameter : Parameters) {
+            if (parameter.Name == name.GetStringValue()) {
+                if (parameter.Type == 1)
+                {
+                    return CValue(std::get<float>(parameter.Value));
+                }
+                else
+                {
+                    return CValue(std::get<int>(parameter.Value));
+                }
+            }
+        }
+        return CValue(0);
+    }
 };

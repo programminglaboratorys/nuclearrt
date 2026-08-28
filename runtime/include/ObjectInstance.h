@@ -76,6 +76,18 @@ public:
     CValue GetEffectParameter() const {
         return CValue(EffectParameter);
     }
+
+    CValue GetEffectInstanceParameter(const CValue& name) const {
+        if (effectInstance == nullptr)
+            return CValue(0);
+        return effectInstance->GetParameter(name);
+    }
+
+    void SetEffectInstanceParameter(const CValue& name, const CValue& value) {
+        if (effectInstance == nullptr)
+            return;
+        effectInstance->SetParameter(name.GetStringValue(), value);
+    }
     
     void SetEffectParameter(const CValue& effectParameter) {
         EffectParameter = static_cast<unsigned char>(std::clamp(effectParameter.GetIntValue(), 0, 255));

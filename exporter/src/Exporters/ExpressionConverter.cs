@@ -250,6 +250,13 @@ public class ExpressionConverter
 					else
 						return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (*{objectSelector}.begin())->RGBCoefficient : 0)");
 				}
+			case 29: // Effect Parameter
+				{
+					if (UseInstance(expression, eventBase))
+						return stringBuilder.Append("instance->GetEffectInstanceParameter(");
+					else
+						return stringBuilder.Append($"(*{objectSelector}.begin())->GetEffectInstanceParameter(");
+				}
 			case 44: // OName$
 				{
 					if (UseInstance(expression, eventBase))
