@@ -38,7 +38,7 @@ void LayerObjectExtension::XSort(bool ascending)
     std::sort(layer.instances.begin(), layer.instances.end(), [ascending](ObjectInstance* a, ObjectInstance* b) { return ascending ? a->GetX() < b->GetX() : a->GetX() > b->GetX(); });
 }
 
-void LayerObjectExtension::AltValueSort(bool ascending, int altIndex, CValue defaultValue)
+void LayerObjectExtension::AltValueSort(bool ascending, int altIndex, const CValue& defaultValue)
 {
     auto& layer = Application::Instance().GetCurrentFrame().get()->Layers[currentLayer];
     std::sort(layer.instances.begin(), layer.instances.end(), [ascending, altIndex, defaultValue](ObjectInstance* a, ObjectInstance* b) {

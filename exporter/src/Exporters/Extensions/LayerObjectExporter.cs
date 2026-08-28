@@ -93,6 +93,9 @@ public class LayerObjectExporter : ExtensionExporter
 
 		switch (expression.Num)
 		{
+			case 23:
+				result = $"{GetExtensionInstance(expression.ObjectInfo, expression.ObjectType)}->GetLayerEffectParameter(";
+				break;
 			default:
 				result = $"0 /* Layer Object expression {expression.Num} not implemented */";
 				break;
