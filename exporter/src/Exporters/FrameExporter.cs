@@ -107,9 +107,10 @@ public class FrameExporter : BaseExporter
 	{
 		var layers = new StringBuilder();
 		layers.AppendLine($"Layers.reserve({frame.layers.Items.Count});");
-		foreach (var layer in frame.layers.Items)
+		for (int i = 0; i < frame.layers.Items.Count; i++)
 		{
-			string layerName = SanitizeObjectName(layer.Name);
+			var layer = frame.layers.Items[i];
+			string layerName = $"layer_{i}";
 			layers.AppendLine($"Layer {layerName} = Layer(\"{SanitizeString(layer.Name)}\", {layer.XCoeff}, {layer.YCoeff}, {(!layer.Flags.GetFlag("ToHide")).ToString().ToLower()});");
 
 			if (ColorUtils.ColorToRGB(layer.RGBCoeff) != "0xFFFFFFFF") layers.AppendLine($"{layerName}.RGBCoefficient = {ColorToRGB(layer.RGBCoeff)};");
@@ -122,26 +123,26 @@ public class FrameExporter : BaseExporter
 			{
 				Shader shader = GameData.shaders.ShaderList[layer.shaderData.ShaderHandle];
 				layers.AppendLine($"{layerName}.effectInstance = EffectBank::CreateEffect_{SanitizeObjectName(shader.Name)}_{layer.shaderData.ShaderHandle}();");
-				for (int i = 0; i < layer.shaderData.parameters.Count; i++)
+				for (int j = 0; j < layer.shaderData.parameters.Count; j++)
 				{
-					var parameter = shader.Parameters[i];
+					var parameter = shader.Parameters[j];
 					string value;
 					switch (parameter.Type)
 					{
 						case 0: //int, also used as bool
-							value = $"static_cast<int>({BitConverter.ToInt32(layer.shaderData.parameters[i].Value as byte[], 0)})";
+							value = $"static_cast<int>({BitConverter.ToInt32(layer.shaderData.parameters[j].Value as byte[], 0)})";
 							break;
 						case 1:
 							//read float from bytes
-							value = $"static_cast<float>({((float)BitConverter.ToSingle(layer.shaderData.parameters[i].Value as byte[], 0)).ToString(CultureInfo.InvariantCulture)}";
+							value = $"static_cast<float>({((float)BitConverter.ToSingle(layer.shaderData.parameters[j].Value as byte[], 0)).ToString(CultureInfo.InvariantCulture)}";
 							if (!value.Contains('.')) value += ".0";
 							value += "f)";
 							break;
 						case 2: //color
-							value = $"static_cast<int>(0x{BitConverter.ToInt32(layer.shaderData.parameters[i].Value as byte[], 0):X8})";
+							value = $"static_cast<int>(0x{BitConverter.ToInt32(layer.shaderData.parameters[j].Value as byte[], 0):X8})";
 							break;
 						default:
-							value = $"static_cast<int>({BitConverter.ToInt32(layer.shaderData.parameters[i].Value as byte[], 0)})";
+							value = $"static_cast<int>({BitConverter.ToInt32(layer.shaderData.parameters[j].Value as byte[], 0)})";
 							break;
 					}
 					layers.AppendLine($"{layerName}.effectInstance->SetParameter(\"{parameter.Name}\", {value});");
