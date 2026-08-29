@@ -2,12 +2,24 @@
 
 #include <vector>
 #include <algorithm>
+#include <string>
 
 enum class TimerEventType {
     Every,
     Equals,
     GreaterThan,
     LessThan
+};
+
+class ScheduledTimerEvent {
+public:
+    std::string name;
+    int remaining = 0;
+    int initialDelay = 0;
+    int interval = 0;
+    int nextFireTime = 0;
+    int index = 0;
+    bool trackEventIndex = false;
 };
 
 class TimerEvent {
@@ -38,10 +50,12 @@ class Timer {
 private:
     int time;
     int deltaTime;
+    int eventIndex;
     std::vector<TimerEvent> events;
+    std::vector<ScheduledTimerEvent> namedEvents;
 
 public:
-    Timer() : time(0), deltaTime(0) {}
+    Timer() : time(0), deltaTime(0), eventIndex(0) {}
 
     void Update(double dt) {
         deltaTime = static_cast<int>(dt * 1000.0 + (dt >= 0.0 ? 0.5 : -0.5));
@@ -79,6 +93,52 @@ public:
 
     int GetHours() const {
         return (time / 3600000) % 24;
+    }
+
+    int GetEventIndex() const {
+        return eventIndex;
+    }
+
+    void StartTimerEvent(const std::string& name, int count, int initialDelayMs, int intervalMs, bool trackEventIndex = false) {
+        if (count <= 0) return;
+
+        if (initialDelayMs < 0) initialDelayMs = 0;
+        if (intervalMs < 0) intervalMs = 0;
+
+        ScheduledTimerEvent evt;
+        evt.name = name;
+        evt.remaining = count;
+        evt.initialDelay = initialDelayMs;
+        evt.interval = intervalMs;
+        evt.nextFireTime = time + initialDelayMs;
+        evt.index = 0;
+        evt.trackEventIndex = trackEventIndex;
+        namedEvents.push_back(evt);
+    }
+
+    template<typename Callback>
+    void ProcessNamedEvents(Callback&& onEvent) {
+        for (int i = 0; i < namedEvents.size(); i++)
+        {
+            auto& evt = namedEvents[i];
+            if (time < evt.nextFireTime) continue;
+
+            if (evt.trackEventIndex) {
+                eventIndex = evt.index++;
+            }
+
+            onEvent(evt.name);
+
+            namedEvents[i].remaining--;
+            if (evt.remaining > 0) {
+                evt.nextFireTime += evt.interval;
+            }
+        }
+
+        namedEvents.erase(
+            std::remove_if(namedEvents.begin(), namedEvents.end(),
+                [](const ScheduledTimerEvent& e) { return e.remaining <= 0; }),
+            namedEvents.end());
     }
 
     bool CheckEvent(int evtID, int checkTime, TimerEventType type) {

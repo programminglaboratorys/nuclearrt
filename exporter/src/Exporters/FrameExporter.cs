@@ -96,6 +96,7 @@ public class FrameExporter : BaseExporter
 		frameHeader = frameHeader.Replace("{{ OBJECT_SELECTORS }}", BuildObjectSelectors(frame));
 		frameHeader = frameHeader.Replace("{{ EVENT_INCLUDES }}", _eventProcessor.BuildEventIncludes(frameIndex));
 		frameHeader = frameHeader.Replace("{{ LOOP_INCLUDES }}", _eventProcessor.BuildLoopIncludes(frameIndex));
+		frameHeader = frameHeader.Replace("{{ TIMER_EVENT_INCLUDES }}", _eventProcessor.BuildTimerEventIncludes(frameIndex));
 		frameHeader = frameHeader.Replace("{{ TRUE_EVENT_INCLUDES }}", _eventProcessor.BuildTrueEventInclude(frameIndex));
 		frameHeader = frameHeader.Replace("{{ RUN_ONCE_CONDITION }}", _eventProcessor.BuildRunOnceCondition(frameIndex));
 		frameHeader = frameHeader.Replace("{{ ONLY_ONE_ACTION_WHEN_LOOP_CONDITION }}", _eventProcessor.BuildOneActionLoop(frameIndex));

@@ -67,7 +67,7 @@ public class EventProcessor
 			if (IsChildEvent(j)) continue;
 
 			//only add event to normal event loop if it doesn't have a loop condition
-			if (DoesEventHaveLoop(evt) == null && !IsTrueEvent(evt, frameIndex))
+			if (DoesEventHaveLoop(evt) == null && DoesEventHaveNamedTimerEvent(evt) == null && !IsTrueEvent(evt, frameIndex))
 			{
 				if (eventLoopType == EventLoopType.Timer)
 				{
@@ -259,6 +259,27 @@ public class EventProcessor
 			result.AppendLine("}");
 		}
 
+		if (HasAnyNamedTimerEvents(frameIndex))
+		{
+			result.AppendLine($"void GeneratedFrame{frameIndex}::OnTimerEvent(const std::string& eventName)");
+			result.AppendLine("{");
+			for (int j = 0; j < _exporter.GameData.Frames[frameIndex].events.Items.Count; j++)
+			{
+				var evt = _exporter.GameData.Frames[frameIndex].events.Items[j];
+				if (ShouldSkipEvent(evt) || IsChildEvent(j)) continue;
+
+				foreach (var condition in evt.Conditions)
+				{
+					if (!new TimerEventCondition().Equals(condition)) continue;
+
+					string eventNameExpr = ExpressionConverter.ConvertExpression(condition.Items[0]?.Loader as ExpressionParameter);
+					result.AppendLine($"\tif (LoopNameEquals(eventName, {eventNameExpr})) {GetEventName(evt)}();");
+				}
+			}
+
+			result.AppendLine("}");
+		}
+
 		if (HasAnyTrueEvents(frameIndex))
 		{
 			result.Append(BuildGenerateEventFunction(frameIndex));
@@ -411,6 +432,16 @@ public class EventProcessor
 		return null;
 	}
 
+	string? DoesEventHaveNamedTimerEvent(EventGroup evtGroup)
+	{
+		foreach (var condition in evtGroup.Conditions)
+		{
+			if (new TimerEventCondition().Equals(condition)) return ExpressionConverter.ConvertExpression(condition.Items[0]?.Loader as ExpressionParameter).ToString() ?? "";
+		}
+
+		return null;
+	}
+
 	bool DoesEventHaveRunOnce(EventGroup evtGroup)
 	{
 		foreach (var condition in evtGroup.Conditions)
@@ -439,6 +470,13 @@ public class EventProcessor
 		return "void OnLoop(const std::string& loopName) override;\n";
 	}
 
+	public string BuildTimerEventIncludes(int frameIndex)
+	{
+		if (!HasAnyNamedTimerEvents(frameIndex)) return "";
+
+		return "void OnTimerEvent(const std::string& eventName) override;\n";
+	}
+
 	public string BuildTrueEventInclude(int frameIndex)
 	{
 		if (!HasAnyTrueEvents(frameIndex)) return "";
@@ -451,6 +489,15 @@ public class EventProcessor
 		foreach (var evt in _exporter.GameData.Frames[frameIndex].events.Items)
 		{
 			if (DoesEventHaveLoop(evt) != null) return true;
+		}
+		return false;
+	}
+
+	private bool HasAnyNamedTimerEvents(int frameIndex)
+	{
+		foreach (var evt in _exporter.GameData.Frames[frameIndex].events.Items)
+		{
+			if (DoesEventHaveNamedTimerEvent(evt) != null) return true;
 		}
 		return false;
 	}
@@ -469,6 +516,7 @@ public class EventProcessor
 		if (evtGroup.Conditions.Count == 0) return false;
 		if (ShouldSkipEvent(evtGroup)) return false;
 		if (DoesEventHaveLoop(evtGroup) != null) return false;
+		if (DoesEventHaveNamedTimerEvent(evtGroup) != null) return false;
 		return IsConditionTrueEvent(evtGroup.Conditions[0], frameIndex);
 	}
 

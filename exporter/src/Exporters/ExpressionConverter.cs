@@ -64,7 +64,7 @@ public class ExpressionConverter
 		{ (ObjectType.Timer, 2), _ => "CValue(GameTimer.GetSeconds())" }, // seconds
 		{ (ObjectType.Timer, 3), _ => "CValue(GameTimer.GetHours())" }, // Hours
 		{ (ObjectType.Timer, 4), _ => "CValue(GameTimer.GetMinutes())" }, // Minutes
-		{ (ObjectType.Timer, 5), _ => $"0" }, // Event Index // TODO
+		{ (ObjectType.Timer, 5), _ => "CValue(GameTimer.GetEventIndex())" }, // Event Index
 
 		//Game
 		{ (ObjectType.Game, 0),  _ => $"CValue(Index + 1)" }, // Frame

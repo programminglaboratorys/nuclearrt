@@ -353,6 +353,7 @@ public:
 	}
 
 	virtual void OnLoop(const std::string& loopName) {}
+	virtual void OnTimerEvent(const std::string& eventName) {}
 	virtual void GenerateEvent(int objectType, int conditionNum, ObjectInstance* source = nullptr) {}
 
 	//Collision detection

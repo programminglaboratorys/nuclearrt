@@ -75,6 +75,11 @@ void Frame::Update()
 			((Extension*)instance)->Update(deltaTime);
 		}
 	}
+
+	//TODO: should timer update be here?
+	GameTimer.ProcessNamedEvents([this](const std::string& eventName) {
+		OnTimerEvent(eventName);
+	});
 }
 
 void Frame::DispatchTrueEvents()

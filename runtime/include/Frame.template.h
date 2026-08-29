@@ -21,6 +21,8 @@ private:
 
 	{{ LOOP_INCLUDES }}
 
+	{{ TIMER_EVENT_INCLUDES }}
+
 	{{ TRUE_EVENT_INCLUDES }}
 
 	{{ RUN_ONCE_CONDITION }}
