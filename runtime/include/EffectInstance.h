@@ -17,11 +17,12 @@ struct EffectParameter {
 
 class EffectInstance {
 public:
-    EffectInstance(std::string filename, std::vector<EffectParameter> parameters)
-        : filename(filename), Parameters(parameters) {}
+    EffectInstance(std::string filename, std::vector<EffectParameter> parameters, bool usesBackground = false)
+        : filename(filename), Parameters(parameters), UsesBackground(usesBackground) {}
 
     std::string filename;
     std::vector<EffectParameter> Parameters;
+    bool UsesBackground = false;
 
     void SetParameter(std::string name, const CValue& value)
     {
