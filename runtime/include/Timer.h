@@ -60,19 +60,19 @@ public:
     }
 
     int GetHundreds() const {
-        return static_cast<int>(time * 100);
+        return static_cast<int>(time * 100) % 100;
     }
 
     int GetSeconds() const {
-        return static_cast<int>(time);
+        return static_cast<int>(time) % 60;
     }
 
     int GetMinutes() const {
-        return static_cast<int>(time / 60);
+        return static_cast<int>(time / 60) % 60;
     }
 
     int GetHours() const {
-        return static_cast<int>(time / 3600);
+        return static_cast<int>(time / 3600) % 24;
     }
 
     bool CheckEvent(int evtID, int checkTime, TimerEventType type) {
