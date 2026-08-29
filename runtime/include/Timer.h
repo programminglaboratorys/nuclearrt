@@ -36,43 +36,49 @@ public:
 
 class Timer {
 private:
-    double time;
+    int time;
+    int deltaTime;
     std::vector<TimerEvent> events;
 
 public:
-    Timer() : time(0) {}
+    Timer() : time(0), deltaTime(0) {}
 
-    void Update(double deltaTime) {
+    void Update(double dt) {
+        deltaTime = static_cast<int>(dt * 1000.0 + (dt >= 0.0 ? 0.5 : -0.5));
+        if (deltaTime < 0) {
+            deltaTime = 0;
+        }
         time += deltaTime;
 
         // Update event times
         for (auto& evt : events) {
-            evt.Update(static_cast<int>(deltaTime * 1000));
+            evt.alreadyChecked = false;
+            evt.Update(deltaTime);
         }
     }
 
     void SetTime(int time) {
-        this->time = time / 1000.0;
+        this->time = time;
     }
 
     int GetTime() const {
-        return static_cast<int>(time * 1000);
+        return time;
     }
 
     int GetHundreds() const {
-        return static_cast<int>(time * 100) % 100;
+        return (time / 10) % 100;
     }
 
     int GetSeconds() const {
-        return static_cast<int>(time) % 60;
+        return (time / 1000) % 60;
     }
 
     int GetMinutes() const {
-        return static_cast<int>(time / 60) % 60;
+        return (time / 60000) % 60;
     }
 
     int GetHours() const {
-        return static_cast<int>(time / 3600) % 24;
+        return (time / 3600000) % 24;
     }
 
     bool CheckEvent(int evtID, int checkTime, TimerEventType type) {
@@ -82,13 +88,14 @@ public:
 
         if (it == events.end()) {
             events.emplace_back(evtID, checkTime, type);
-            return false;
+            events.back().Update(deltaTime);
+            it = events.end() - 1;
         }
 
         TimerEvent& evt = *it;
 
         if (evt.type == TimerEventType::Equals) {
-            if (time * 1000 < evt.checkTime) {
+            if (time < evt.checkTime) {
                 evt.triggered = false;
                 evt.alreadyChecked = false;
             }
@@ -102,28 +109,30 @@ public:
         // Check conditions
         switch (type) {
             case TimerEventType::Every:
-                if (evt.time >= evt.checkTime) {
+                if (evt.checkTime <= 0 || evt.time >= evt.checkTime) {
+                    if (evt.checkTime > 0) {
+                        evt.time %= evt.checkTime;
+                    }
                     evt.triggered = true;
                     evt.alreadyChecked = true;
-                    evt.Reset();
                     return true;
                 }
                 break;
             case TimerEventType::Equals:
-                if (time * 1000 >= evt.checkTime && !evt.triggered) {
+                if (time >= evt.checkTime && !evt.triggered) {
                     evt.triggered = true;
                     evt.alreadyChecked = true;
                     return true;
                 }
                 break;
             case TimerEventType::GreaterThan:
-                if (time * 1000 > evt.checkTime) {
+                if (time > evt.checkTime) {
                     evt.triggered = true;
                     return true;
                 }
                 break;
             case TimerEventType::LessThan:
-                if (time * 1000 < evt.checkTime) {
+                if (time < evt.checkTime) {
                     evt.triggered = true;
                     return true;
                 }
