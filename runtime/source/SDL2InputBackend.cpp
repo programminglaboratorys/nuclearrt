@@ -67,7 +67,7 @@ int SDL2InputBackend::GetMouseY()
 #else
 	int windowY;
 	SDL_GetWindowPosition(window, NULL, &windowY);
-	SDL_GetGlobalMouseState(NULL, &mouseY);
+	SDL_GetGlobalMouseState(NULL, &y);
 	int mouseY = y - windowY;
 #endif
 
