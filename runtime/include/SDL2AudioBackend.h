@@ -1,0 +1,80 @@
+#pragma once
+
+#ifdef NUCLEAR_BACKEND_SDL2
+
+#include "AudioBackend.h"
+#include <vector>
+#include <unordered_map>
+#include <set>
+
+#include <SDL2/SDL.h>
+
+typedef struct SampleFile {
+	Uint8 *data = nullptr;
+	Uint32 data_len = 0;
+	SDL_AudioSpec spec{};
+	std::string pathName = "";
+} SampleFile;
+
+typedef struct Channel {
+	Uint8 *data = nullptr; // No need to make floats, as SDL_AudioStream does convert samples into a format you give via SDL_AudioSpec
+	Uint32 data_len = 0;
+	SDL_AudioSpec spec{};
+	bool uninterruptable = false;
+	SDL_AudioStream *stream = nullptr;
+	int position = 0;
+	bool lock = false;
+	bool finished = false;
+	int curHandle = -1;
+	bool loop = false;
+	bool pause = false;
+	float volume = 1.0f;
+	float pan = 0.0f;
+	std::string name = "";
+} Channel;
+
+class SDL2Backend;
+
+class SDL2AudioBackend : public AudioBackend {
+public:
+	void Initialize() override;
+	void Deinitialize() override;
+
+	void SetBackend(SDL2Backend* b) { backend = b; }
+
+	static void SDLCALL AudioCallback(void* userdata, Uint8* stream, int len);
+	bool LoadSample(int id, int channel) override;
+	bool LoadSampleFile(std::string path) override;
+	int FindSample(std::string name) override;
+	void PlaySample(int id, int channel, int loops, int freq, bool uninterruptable, float volume, float pan) override;
+	void PlaySampleFile(std::string path, int channel, int loops) override;
+	void DiscardSampleFile(std::string path) override;
+	void UpdateSample() override;
+	void PauseSample(int id, bool channel, bool pause) override;
+	bool SampleState(int id, bool channel, bool pauseOrStop) override;
+	CValue GetSampleVolume(CValue id) override;
+	CValue GetSampleVolume(std::string name) override;
+	CValue GetChannelVolume(CValue id) override;
+	CValue GetChannelName(CValue channel) override;
+	void SetSampleVolume(float volume, int id, bool channel) override;
+	void LockChannel(int channel, bool unlock) override;
+	void SetSamplePan(float pan, int id, bool channel) override;
+	CValue GetSamplePan(int id, bool channel) override;
+	CValue GetSampleDuration(int id, bool channel) override;
+	CValue GetSamplePos(int id, bool channel) override;
+	void SetSamplePos(int pos, int id, bool channel) override;
+	void StopSample(int id, bool channel) override;
+	
+
+private:
+	static SDL_AudioDeviceID audio_device;
+	SDL_AudioSpec spec;
+	float mainVol = 100.0f;
+	float mainPan = 0.0f;
+
+	std::unordered_map<std::string, SampleFile> sampleFiles;
+	Channel channels[49]; // 48 will be the last element.
+
+	SDL2Backend* backend = nullptr;
+}; 
+#endif
