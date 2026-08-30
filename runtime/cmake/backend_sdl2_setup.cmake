@@ -1,0 +1,23 @@
+add_compile_definitions(NUCLEAR_BACKEND_SDL2)
+
+if(PLATFORM_IOS)
+    set(SDL_SHARED OFF CACHE BOOL "" FORCE)
+    set(SDL_STATIC ON CACHE BOOL "" FORCE)
+endif()
+
+find_package(SDL2 QUIET)
+if (NOT SDL2_FOUND)
+    message(STATUS "Getting SDL2 from Github")
+    include_dependency(SDL2 https://github.com/libsdl-org/SDL.git release-2.32.10)
+else()
+    message(STATUS "Using local SDL2")
+endif()
+
+set(SDLTTF_VENDORED ON)
+find_package(SDL2_ttf QUIET)
+if (NOT SDL2_ttf_FOUND)
+    message(STATUS "Getting SDL2_ttf from Github")
+    include_dependency(SDL2_ttf https://github.com/libsdl-org/SDL_ttf.git release-2.24.0)
+else()
+    message(STATUS "Using local SDL2_ttf")
+endif()

@@ -10,9 +10,19 @@ if(NOT PLATFORM_WEB)
         ${IMGUI_PATH}/imgui_draw.cpp
         ${IMGUI_PATH}/imgui_tables.cpp
         ${IMGUI_PATH}/imgui_widgets.cpp
-        ${IMGUI_PATH}/backends/imgui_impl_sdl3.cpp
-        ${IMGUI_PATH}/backends/imgui_impl_opengl3.cpp
     )
+
+    if(PLATFORM_BACKEND STREQUAL "SDL3")
+        list(APPEND IMGUI_SOURCES
+            ${IMGUI_PATH}/backends/imgui_impl_sdl3.cpp
+            ${IMGUI_PATH}/backends/imgui_impl_opengl3.cpp
+        )
+    elseif(PLATFORM_BACKEND STREQUAL "SDL2")
+        list(APPEND IMGUI_SOURCES
+            ${IMGUI_PATH}/backends/imgui_impl_sdl2.cpp
+            ${IMGUI_PATH}/backends/imgui_impl_sdlrenderer2.cpp
+        )
+    endif()
     
     include_directories(
         ${IMGUI_PATH}

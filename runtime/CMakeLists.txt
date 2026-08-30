@@ -8,6 +8,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
+set(BACKEND_OPTIONS "SDL3" "SDL2")
+set(DEFAULT_PLATFORM_BACKEND "SDL3")
+
+set(PLATFORM_BACKEND "${DEFAULT_PLATFORM_BACKEND}" CACHE STRING "Select the platform backend")
+
+set_property(CACHE PLATFORM_BACKEND PROPERTY STRINGS ${BACKEND_OPTIONS})
+
+if(NOT PLATFORM_BACKEND IN_LIST BACKEND_OPTIONS)
+    message(FATAL_ERROR "Invalid backend '${PLATFORM_BACKEND}'. Choose from: ${BACKEND_OPTIONS}")
+endif()
+
 include(cmake/platform_setup.cmake)
 
 include(FetchContent)
@@ -23,7 +34,11 @@ function(include_dependency libName gitURL gitTag)
     FetchContent_MakeAvailable(${libName})
 endfunction()
 
-include(cmake/backend_sdl3_setup.cmake)
+if(PLATFORM_BACKEND STREQUAL "SDL3")
+    include(cmake/backend_sdl3_setup.cmake)
+elseif(PLATFORM_BACKEND STREQUAL "SDL2")
+    include(cmake/backend_sdl2_setup.cmake)
+endif()
 
 include(cmake/debug.cmake)
 
@@ -74,7 +89,13 @@ endif()
 
 include(cmake/assets.cmake)
 
-include(cmake/backend_sdl3_link.cmake)
+if(PLATFORM_BACKEND STREQUAL "SDL3")
+    include(cmake/backend_sdl3_link.cmake)
+elseif(PLATFORM_BACKEND STREQUAL "SDL2")
+    include(cmake/backend_sdl2_link.cmake)
+endif()
+
+include(cmake/lz4.cmake)
 
 # Install target
 if(PLATFORM_MACOS)

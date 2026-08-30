@@ -2,22 +2,28 @@
 
 #ifdef _DEBUG
 
-#include <SDL3/SDL.h>
 #include <cstdio>
 #include <chrono>
 
-// Dear ImGui includes
 #include "imgui.h"
+
+#if defined(NUCLEAR_BACKEND_SDL3)
+#include <SDL3/SDL.h>
 #include "imgui_impl_sdl3.h"
 #include "imgui_impl_opengl3.h"
+#elif defined(NUCLEAR_BACKEND_SDL2)
+#include <SDL.h>
+#include "imgui_impl_sdl2.h"
+#include "imgui_impl_sdlrenderer2.h"
+#endif
 
-void DebugUI::Initialize(SDL_Window* window, void* glContext) {
+void DebugUI::Initialize(SDL_Window* window, void* renderContext) {
 	if (initialized) {
 		return;
 	}
 
 	this->window = window;
-	this->glContext = glContext;
+	this->renderContext = renderContext;
 
 	IMGUI_CHECKVERSION();
 	context = ImGui::CreateContext();
@@ -25,8 +31,16 @@ void DebugUI::Initialize(SDL_Window* window, void* glContext) {
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 
-	ImGui_ImplSDL3_InitForOpenGL(window, glContext);
+	//TODO: this init stuff should be done in the backend
+	//plus the actual debug window should just be created here.
+
+#if defined(NUCLEAR_BACKEND_SDL3)
+	ImGui_ImplSDL3_InitForOpenGL(window, renderContext);
 	ImGui_ImplOpenGL3_Init("#version 330");
+#elif defined(NUCLEAR_BACKEND_SDL2)
+	ImGui_ImplSDL2_InitForSDLRenderer(window, (SDL_Renderer*)renderContext);
+	ImGui_ImplSDLRenderer2_Init((SDL_Renderer*)renderContext);
+#endif
 
 	initialized = true;
 }
@@ -36,8 +50,14 @@ void DebugUI::Shutdown() {
 		return;
 	}
 
+#if defined(NUCLEAR_BACKEND_SDL3)
 	ImGui_ImplOpenGL3_Shutdown();
 	ImGui_ImplSDL3_Shutdown();
+#elif defined(NUCLEAR_BACKEND_SDL2)
+	ImGui_ImplSDLRenderer2_Shutdown();
+	ImGui_ImplSDL2_Shutdown();
+#endif
+
 	ImGui::DestroyContext(context);
 	context = nullptr;
 
@@ -56,8 +76,14 @@ void DebugUI::BeginFrame() {
 	
 	fps = 1.0f / frameTime;
 
+#if defined(NUCLEAR_BACKEND_SDL3)
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
+#elif defined(NUCLEAR_BACKEND_SDL2)
+	ImGui_ImplSDLRenderer2_NewFrame();
+	ImGui_ImplSDL2_NewFrame();
+#endif
+
 	ImGui::NewFrame();
 }
 
@@ -70,7 +96,12 @@ void DebugUI::EndFrame() {
 	RenderMetrics();
 
 	ImGui::Render();
+
+#if defined(NUCLEAR_BACKEND_SDL3)
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+#elif defined(NUCLEAR_BACKEND_SDL2)
+	ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData(), (SDL_Renderer*)renderContext);
+#endif
 }
 
 void DebugUI::AddWindow(const std::string& name, std::function<void()> renderFunction) {

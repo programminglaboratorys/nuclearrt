@@ -17,7 +17,7 @@ public:
 		return instance;
 	}
 
-	void Initialize(SDL_Window* window, void* glContext);
+	void Initialize(SDL_Window* window, void* renderContext);
 	void Shutdown();
 	
 	void BeginFrame();
@@ -42,7 +42,7 @@ private:
 	bool initialized = false;
 	
 	SDL_Window* window = nullptr;
-	void* glContext = nullptr;
+	void* renderContext = nullptr;
 	ImGuiContext* context = nullptr;
 	
 	float frameTime = 0.0f;
