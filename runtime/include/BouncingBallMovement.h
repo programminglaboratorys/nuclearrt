@@ -15,12 +15,18 @@ public:
 	short deceleration;
 
 	float realSpeed = 0;
+	float stopSpeed = 0;
+	bool hasStopSpeed = false;
+	float subPixelX = 0;
+	float subPixelY = 0;
 
 	CValue GetRealSpeed() override { return CValue(realSpeed); }
 	int GetMinimumSpeed() override { return 0; }
 	int GetMaximumSpeed() override { return static_cast<int>(speed); }
 	int GetMovementDirection() override { return movementDirection; }
-	
+	void SetCurrentSpeed(int speed) override;
 	void OnEnabled() override;
+	void Start() override;
+	void Stop() override;
 	void Update(float deltaTime) override;
 };
