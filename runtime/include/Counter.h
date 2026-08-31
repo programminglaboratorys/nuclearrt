@@ -31,6 +31,8 @@ public:
 		{
 			currentValue = value;
 		}
+
+		collisionBoundsDirty = true;
 	}
 
 	void AddValue(const CValue& value)
@@ -66,6 +68,7 @@ public:
 		Flags = counterData->flags;
 		Values = counterData->values;
 		Strings = counterData->strings;
+		collisionBoundsDirty = true; // since we don't call SetValue
 	}
 
 private:

@@ -62,7 +62,7 @@ public:
 	int GetWidth() {
 		if (DisplayType == 1) // Numbers
 		{
-			std::string valueString = std::to_string(GetValue().GetDoubleValue());
+			std::string valueString = std::to_string(GetValue().GetIntValue());
 			int numDigits = static_cast<int>(valueString.size());
 
 			if (IntDigitCount > 0)
