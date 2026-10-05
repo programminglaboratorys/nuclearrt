@@ -13,7 +13,7 @@ public class AnimationPlayingCondition : ConditionBase
 
 		result.AppendLine($"for (ObjectIterator it({GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");
-		result.AppendLine($"    if (!((Active*)instance)->animations.IsSequencePlaying({((Short)eventBase.Items[0].Loader).Value})) it.deselect();");
+		result.AppendLine($"    {ifStatement}((Active*)instance)->animations.IsSequencePlaying({((Short)eventBase.Items[0].Loader).Value})) it.deselect();");
 		result.AppendLine("}");
 
 		result.AppendLine($"if ({GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}.Count() == 0) goto {nextLabel};");
