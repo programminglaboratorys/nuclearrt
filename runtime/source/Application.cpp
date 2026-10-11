@@ -198,8 +198,6 @@ void Application::LoadFrame(int frameIndex)
 		currentFrame->ApplyGlobalObjectData(globalObjectData);
 	}
 	
-	backend->input->ShowMouseCursor();
-
 	std::vector<unsigned int> newImagesUsed = currentFrame->GetImagesUsed();
 	std::vector<unsigned int> newFontsUsed = currentFrame->GetFontsUsed();
 
