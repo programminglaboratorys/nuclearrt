@@ -17,7 +17,12 @@
 class Frame {
 public:
 	Frame() = default;
-    virtual ~Frame() = default;
+    virtual ~Frame() {
+		for (auto& [handle, instance] : ObjectInstances) delete instance;
+	}
+
+	Frame(const Frame&) = delete;
+	Frame& operator=(const Frame&) = delete;
 
 	int Index = -1;
 	std::string Name = "";
@@ -70,16 +75,19 @@ public:
 
 	void DeleteMarkedInstances() {
 		for (auto& handle : instancesMarkedForDeletion) {
+			auto found = ObjectInstances.find(handle);
+			if (found == ObjectInstances.end()) continue;
+			ObjectInstance* instance = found->second;
+
 			for (auto& layer : Layers) {
-				auto it = std::find_if(layer.instances.begin(), layer.instances.end(), [handle](ObjectInstance* instance) {
-					return instance->Handle == handle;
-				});
+				auto it = std::find(layer.instances.begin(), layer.instances.end(), instance);
 				if (it != layer.instances.end()) {
 					layer.instances.erase(it);
 					break;
 				}
 			}
-			ObjectInstances.erase(handle);
+			ObjectInstances.erase(found);
+			delete instance;
 		}
 		instancesMarkedForDeletion.clear();
 	}

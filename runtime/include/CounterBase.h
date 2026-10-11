@@ -17,6 +17,7 @@ class CounterBase : public ObjectInstance {
 public:
 	CounterBase(unsigned int objectInfoHandle, int type, std::string name)
 		: ObjectInstance(objectInfoHandle, type, name) {}
+	~CounterBase() override { movements.Deinitialize(); }
 
 	bool Visible = true;
 

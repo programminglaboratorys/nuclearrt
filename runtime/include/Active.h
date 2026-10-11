@@ -15,6 +15,7 @@ class Active : public ObjectInstance {
 public:
 	Active(unsigned int objectInfoHandle, int type, std::string name)
 		: ObjectInstance(objectInfoHandle, type, name) {}
+	~Active() override { movements.Deinitialize(); }
 
 	Animations animations;
 	AlterableValues Values;

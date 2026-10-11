@@ -13,6 +13,13 @@ public:
 		currentMovementIndex = 0;
 	}
 
+	void Deinitialize() {
+		GetCurrentMovement()->OnDisabled();
+
+		for (auto& [index, movement] : items) delete movement;
+		items.clear();
+	}
+
 	std::unordered_map<int, Movement*> items;
 	unsigned int currentMovementIndex = 0;
 
