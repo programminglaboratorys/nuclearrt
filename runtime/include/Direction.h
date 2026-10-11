@@ -1,12 +1,13 @@
 #pragma once
 
+#include <utility>
 #include <vector>
 
 class Direction {
 public:
     Direction(int index, int minimumSpeed, int maximumSpeed, bool repeat, int repeatFrame, std::vector<unsigned int> frames)
         : Index(index), MinimumSpeed(minimumSpeed), MaximumSpeed(maximumSpeed), 
-          Repeat(repeat), RepeatFrame(repeatFrame), Frames(frames) {}
+          Repeat(repeat), RepeatFrame(repeatFrame), Frames(std::move(frames)) {}
 
     int Index;
     int MinimumSpeed;

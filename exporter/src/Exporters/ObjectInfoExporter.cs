@@ -187,7 +187,8 @@ public class ObjectInfoExporter : BaseExporter
 			result.AppendLine($"((Active*)instance)->FollowFrame = {(!common.Flags.GetFlag("ScrollingIndependant")).ToString().ToLower()};");
 			result.AppendLine($"((Active*)instance)->AutomaticRotation = {common.NewFlags.GetFlag("AutomaticRotation").ToString().ToLower()};");
 			result.AppendLine($"((Active*)instance)->FineDetection = {(!common.NewFlags.GetFlag("CollisionBox")).ToString().ToLower()};");
-			result.AppendLine($"((Active*)instance)->animations = {BuildAnimations(common)};");
+			result.AppendLine($"static const auto sequences = {BuildAnimations(common)};");
+			result.AppendLine($"((Active*)instance)->animations = Animations(sequences);");
 			result.AppendLine($"((Active*)instance)->animations.SetOwner(instance);");
 			result.AppendLine($"((Active*)instance)->Values = {BuildAlterableValues(common)};");
 			result.AppendLine($"((Active*)instance)->Strings = {BuildAlterableStrings(common)};");
@@ -300,7 +301,7 @@ public class ObjectInfoExporter : BaseExporter
 	{
 		var result = new StringBuilder();
 
-		result.Append($"Animations(");
+		result.Append("std::make_shared<const std::unordered_map<int, Sequence*>>(");
 		result.Append("std::unordered_map<int, Sequence*>{");
 
 		var sequences = new List<string>();

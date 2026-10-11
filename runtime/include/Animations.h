@@ -13,7 +13,7 @@ class ObjectInstance;
 class Animations {
 public:
 	Animations() = default;
-	Animations(const std::unordered_map<int, Sequence*> sequences);
+	Animations(std::shared_ptr<const std::unordered_map<int, Sequence*>> sequences);
 
 	bool IsSequencePlaying(int sequence) const;
 	bool IsSequenceOver(int sequence) const;
@@ -59,7 +59,7 @@ public:
 	bool AutomaticRotation = false;
 private:
 	ObjectInstance* owner = nullptr;
-	std::unordered_map<int, Sequence*> Sequences;
+	std::shared_ptr<const std::unordered_map<int, Sequence*>> Sequences;
 	float CurrentFrameTime = 0.0f;
 
 	int RequestedSequenceIndex = 0;

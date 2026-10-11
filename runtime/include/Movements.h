@@ -9,7 +9,7 @@ class Movements
 {
 public:
 	Movements() = default;
-	Movements(const std::unordered_map<int, Movement*> movementItems) : items(movementItems) {
+	Movements(std::unordered_map<int, Movement*> movementItems) : items(std::move(movementItems)) {
 		currentMovementIndex = 0;
 	}
 
