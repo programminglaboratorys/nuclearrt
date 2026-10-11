@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ObjectInstance.h"
+#include <unordered_set>
 #include <vector>
 #include <algorithm>
 
@@ -45,10 +46,10 @@ public:
 			obj->isSelected = false;
 		}
 		SelectedInstances.clear();
-		for (auto* obj : snap) {
-			if (obj == nullptr) continue;
-			auto it = std::find(AllSelectorObjectInstances.begin(), AllSelectorObjectInstances.end(), obj);
-			if (it == AllSelectorObjectInstances.end()) continue;
+		AllSelected = false;
+		std::unordered_set<ObjectInstance*> wanted(snap.begin(), snap.end());
+		for (auto* obj : AllSelectorObjectInstances) {
+			if (wanted.count(obj) == 0) continue;
 			obj->isSelected = true;
 			SelectedInstances.push_back(obj);
 		}
@@ -58,29 +59,30 @@ public:
 	// Called during a event to scope all objects that are relevant to the event
 	void Reset(ObjectInstance* restrictTo = nullptr) {
 		if (restrictTo) {
-			for (auto* obj : AllSelectorObjectInstances) {
-				if (obj == restrictTo) {
-					SelectOnly(restrictTo);
-					return;
-				}
+			auto it = std::lower_bound(AllSelectorObjectInstances.begin(), AllSelectorObjectInstances.end(), restrictTo,
+				[](ObjectInstance* a, ObjectInstance* b) { return a->Handle < b->Handle; });
+
+			if (it != AllSelectorObjectInstances.end() && *it == restrictTo) {
+				SelectOnly(restrictTo);
+				return;
 			}
 		}
+
 		for (auto* obj : SelectedInstances) {
 			obj->isSelected = false;
 		}
-		SelectedInstances = AllSelectorObjectInstances;
-		for (auto* obj : SelectedInstances) {
-			obj->isSelected = true;
-		}
-		IsDirty = false; 
+		
+		SelectedInstances.clear();
+		AllSelected = true;
+		IsDirty = false;
 	}
 
 	// Called when an object is destroyed
 	void RemoveInstance(unsigned int handle) {
-		auto it = std::find_if(AllSelectorObjectInstances.begin(), AllSelectorObjectInstances.end(),
-			[handle](ObjectInstance* p) { return p->Handle == handle; });
-		
-		if (it != AllSelectorObjectInstances.end()) {
+		auto it = std::lower_bound(AllSelectorObjectInstances.begin(), AllSelectorObjectInstances.end(), handle,
+			[](ObjectInstance* p, unsigned int h) { return p->Handle < h; });
+
+		if (it != AllSelectorObjectInstances.end() && (*it)->Handle == handle) {
 			(*it)->isSelected = false;
 			AllSelectorObjectInstances.erase(it);
 		}
@@ -96,6 +98,16 @@ public:
 	}
 
 	void AddInstance(ObjectInstance* instance) {
+		if (AllSelected) {
+			auto it = std::lower_bound(AllSelectorObjectInstances.begin(), AllSelectorObjectInstances.end(), instance,
+				[](ObjectInstance* a, ObjectInstance* b) { return a->Handle < b->Handle; });
+
+			if (it == AllSelectorObjectInstances.end() || (*it)->Handle != instance->Handle) {
+				AllSelectorObjectInstances.insert(it, instance);
+			}
+
+			return;
+		}
 		if (!instance->isSelected) {
 			instance->isSelected = true;
 			SelectedInstances.push_back(instance);
@@ -112,6 +124,7 @@ public:
 
 	// Deselect an instance by index in the selected array
 	void DeselectAt(size_t index) {
+		ApplyPendingReset();
 		if (index < SelectedInstances.size()) {
 			SelectedInstances[index]->isSelected = false;
 			SelectedInstances[index] = SelectedInstances.back();
@@ -122,6 +135,7 @@ public:
 
 	// Add an instance back to selection
 	void Select(ObjectInstance* instance) {
+		if (AllSelected) return;
 		if (instance->ObjectInfoHandle == ObjectInfoId && !instance->isSelected) {
 			instance->isSelected = true;
 			SelectedInstances.push_back(instance);
@@ -130,6 +144,7 @@ public:
 	}
 
 	void SelectOnly(ObjectInstance* instance) {
+		AllSelected = false;
 		for (auto* obj : SelectedInstances) obj->isSelected = false;
 		SelectedInstances.clear();
 		
@@ -139,6 +154,7 @@ public:
 	}
 
 	void SelectRandom() {
+		ApplyPendingReset();
 		if (!SelectedInstances.empty()) {
 			size_t randomIndex = Application::Instance().RandomRange(0, static_cast<short>(SelectedInstances.size() - 1)).GetIntValue();
 			ObjectInstance* instance = SelectedInstances[randomIndex];
@@ -149,19 +165,20 @@ public:
 	void DeselectAll() {
 		for (auto* obj : SelectedInstances) obj->isSelected = false;
 		SelectedInstances.clear();
+		AllSelected = false;
 		IsDirty = false;
 	}
 
 	// Get number of selected instances
-	size_t Count() const { return SelectedInstances.size(); }
+	size_t Count() const { return AllSelected ? AllSelectorObjectInstances.size() : SelectedInstances.size(); }
 	
 	// Get number of all object instances in the selector
 	size_t Size() const { return AllSelectorObjectInstances.size(); }
 
 	// Access instance by index
 	ObjectInstance* At(size_t index) {
+		EnsureSorted();
 		if (index < SelectedInstances.size()) {
-			EnsureSorted();
 			return SelectedInstances[index];
 		}
 		return nullptr;
@@ -169,19 +186,32 @@ public:
 
 	// Iterator methods with improved signatures
 	iterator begin() { EnsureSorted(); return SelectedInstances.begin(); }
-	iterator end() { return SelectedInstances.end(); }
+	iterator end() { ApplyPendingReset(); return SelectedInstances.end(); }
 
 	const_iterator begin() const { 
 		const_cast<ObjectSelector*>(this)->EnsureSorted(); 
 		return SelectedInstances.begin(); 
 	}
-	const_iterator end() const { return SelectedInstances.end(); }
+	const_iterator end() const { const_cast<ObjectSelector*>(this)->ApplyPendingReset(); return SelectedInstances.end(); }
 
 	// Friend declaration for the iterator
 	friend class ObjectIterator;
 
 private:
+	void ApplyPendingReset() {
+		if (!AllSelected) return;
+		AllSelected = false;
+		SelectedInstances = AllSelectorObjectInstances;
+
+		for (auto* obj : SelectedInstances) {
+			obj->isSelected = true;
+		}
+		
+		IsDirty = false;
+	}
+
 	void EnsureSorted() {
+		ApplyPendingReset();
 		if (IsDirty) {
 			std::sort(SelectedInstances.begin(), SelectedInstances.end(), 
 				[](ObjectInstance* a, ObjectInstance* b) { return a->Handle < b->Handle; });
@@ -194,6 +224,7 @@ private:
 	unsigned int ObjectInfoId = 0;
 	bool IsQualifier = false;
 	bool IsDirty = false;
+	bool AllSelected = false;
 };
 
 // Add ObjectIterator class to support the requested iteration pattern
