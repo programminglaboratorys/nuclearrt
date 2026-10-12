@@ -38,7 +38,7 @@ public class SecToHMSExporter : ExtensionExporter
 		switch (actionNum)
 		{
 			case 0:
-				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->ConvertSeconds({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)})) goto {nextLabel};");
+				result.AppendLine($"{GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->ConvertSeconds({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)});");
 				break;
 			default:
 				result.AppendLine($"// Seconds to HMS action {actionNum} not implemented");
@@ -55,13 +55,13 @@ public class SecToHMSExporter : ExtensionExporter
 		switch (expression.Num)
 		{
 			case 0:
-				result = $"{GetExtensionInstance(expression.ObjectInfo, expression.ObjectType)}->GetSeconds(";
+				result = $"{GetExtensionInstance(expression.ObjectInfo, expression.ObjectType)}->GetHours()";
 				break;
 			case 1:
-				result = $"{GetExtensionInstance(expression.ObjectInfo, expression.ObjectType)}->GetMinutes(";
+				result = $"{GetExtensionInstance(expression.ObjectInfo, expression.ObjectType)}->GetMinutes()";
 				break;
 			case 2:
-				result = $"{GetExtensionInstance(expression.ObjectInfo, expression.ObjectType)}->GetHours(";
+				result = $"{GetExtensionInstance(expression.ObjectInfo, expression.ObjectType)}->GetSeconds()";
 				break;
 			default:
 				result = $"(/* Seconds to HMS expression {expression.Num} not implemented */";
