@@ -3,5 +3,6 @@ public enum BuildType
 	SourceCode,
 	WindowsDebug,
 	WindowsRelease,
-	Web
+	Web,
+	Switch
 }
