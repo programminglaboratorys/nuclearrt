@@ -9,6 +9,8 @@ public class CollisionMaskBuilder
 	public struct CollisionMask
 	{
 		public int Handle;
+		public int Width;
+		public int Height;
 		public byte[] Data;
 	}
 
@@ -20,7 +22,7 @@ public class CollisionMaskBuilder
 
 		foreach (var image in gameData.Images.Items.Values)
 		{
-			var collisionMask = new CollisionMask { Handle = image.Handle };
+			var collisionMask = new CollisionMask { Handle = image.Handle, Width = image.Width, Height = image.Height };
 			Bitmap bitmap = image.bitmap;
 			BinaryWriter writer = new BinaryWriter(new MemoryStream());
 			

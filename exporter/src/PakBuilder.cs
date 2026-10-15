@@ -57,8 +57,10 @@ public class PakBuilder
 		foreach (var mask in collisionMasks)
 		{
 			var entry = new PakEntry { Path = $"images/masks/{mask.Handle}.bin" };
-			entry.Size = (uint)mask.Data.Length;
-			entry.Data = mask.Data;
+			MemoryStream maskStream = WriteCompressedMask(mask);
+			entry.Size = (uint)maskStream.Length;
+			entry.Data = maskStream.ToArray();
+			maskStream.Close();
 			mainPak.AddEntry(entry);
 		}
 
@@ -220,6 +222,35 @@ public class PakBuilder
 			K4os.Compression.LZ4.LZ4Level.L09_HC);
 
 		return new MemoryStream(comp, 0, encodedLength);
+	}
+
+	public static MemoryStream WriteCompressedMask(CollisionMask mask)
+	{
+		byte[] uncomp = mask.Data;
+
+		byte[] comp = new byte[LZ4Codec.MaximumOutputSize(uncomp.Length)];
+		int compressedSize = LZ4Codec.Encode(
+			uncomp,
+			0,
+			uncomp.Length,
+			comp,
+			0,
+			comp.Length,
+			LZ4Level.L09_HC
+		);
+
+		var ms = new MemoryStream();
+		var bw = new BinaryWriter(ms);
+
+		bw.Write((ushort)mask.width);
+		bw.Write((ushort)mask.height);
+		bw.Write(mask.Data.Length);
+		bw.Write(comp, 0, compressedSize);
+
+		bw.Flush(); 
+		ms.Position = 0; 
+
+		return ms;
 	}
 }
 
