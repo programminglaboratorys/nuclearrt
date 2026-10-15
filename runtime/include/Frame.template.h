@@ -10,6 +10,7 @@ public:
     ~GeneratedFrame{{ FRAME_INDEX }}() = default;
 
 	void Initialize() override;
+	std::vector<unsigned int> GetSoundsUsed() override;
 	void Update() override;
 	void Draw() override;
 

@@ -31,6 +31,10 @@ void GeneratedFrame{{ FRAME_INDEX }}::Initialize() {
 	Frame::PostInitialize();
 }
 
+std::vector<unsigned int> GeneratedFrame{{ FRAME_INDEX }}::GetSoundsUsed() {
+	return { {{ SOUNDS_USED }} };
+}
+
 void GeneratedFrame{{ FRAME_INDEX }}::Update() {
 	Frame::Update();
 

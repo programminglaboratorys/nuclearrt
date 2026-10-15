@@ -97,6 +97,7 @@ public:
 
 	std::vector<unsigned int> GetImagesUsed();
 	std::vector<unsigned int> GetFontsUsed();
+	virtual std::vector<unsigned int> GetSoundsUsed() { return {}; }
 
 	ObjectInstance* CreateInstance(ObjectInstance* createdInstance, short x, short y, unsigned int layer, short instanceValue, unsigned int objectInfoHandle, short angle, bool postInitialize = false, ObjectInstance* parentInstance = nullptr);
 
