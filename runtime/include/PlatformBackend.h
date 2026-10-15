@@ -53,7 +53,14 @@ public:
 
 		compressedSize = static_cast<uint32_t>(data.size() - 8);
 
-		if (width == 0 || height == 0 || compressedSize == 0 || uncompressedSize == 0 || data.size() < 8 + compressedSize)
+		if (width == 0 || height == 0 || compressedSize == 0 || uncompressedSize == 0)
+			return {};
+
+		if ((uint64_t)((width + 7) / 8) * height != uncompressedSize)
+			return {};
+
+		// don't load weirdly large masks
+		if (uncompressedSize > (8 * 1024 * 1024))
 			return {};
 
 		std::vector<uint8_t> output(uncompressedSize);
@@ -78,7 +85,7 @@ public:
 		std::vector<uint8_t> data = pakFile.GetData("images/masks/" + std::to_string(imageId) + ".bin");
 		if (!data.empty())
 		{
-			std::vector<uint8_t> decompressed = DecompressCollisionMaskLZ4(data);
+			std::vector<uint8_t> decompressed = DecompressCollisionMask(data);
 			if (decompressed.empty())
 				return nullptr;
 
