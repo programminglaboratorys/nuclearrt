@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <vector>
 #include "PakFile.h"
+#include "lz4.h"
 
 class PlatformBackend {
 public:
@@ -37,7 +38,7 @@ public:
 
 	std::vector<uint8_t> DecompressCollisionMask(const std::vector<uint8_t>& data)
 	{
-		if (data.size() < 12)
+		if (data.size() < 8)
 			return {};
 
 		const uint8_t* ptr = data.data();
@@ -52,7 +53,7 @@ public:
 
 		compressedSize = static_cast<uint32_t>(data.size() - 8);
 
-		if (width == 0 || height == 0 || compressedSize == 0 || uncompressedSize == 0 || data.size() < 12u + compressedSize)
+		if (width == 0 || height == 0 || compressedSize == 0 || uncompressedSize == 0 || data.size() < 8 + compressedSize)
 			return {};
 
 		std::vector<uint8_t> output(uncompressedSize);

@@ -6,6 +6,7 @@ using CTFAK.EXE;
 using CTFAK.FileReaders;
 using CTFAK.Memory;
 using CTFAK.Utils;
+using static CollisionMaskBuilder;
 
 public class PakBuilder
 {
@@ -242,8 +243,8 @@ public class PakBuilder
 		var ms = new MemoryStream();
 		var bw = new BinaryWriter(ms);
 
-		bw.Write((ushort)mask.width);
-		bw.Write((ushort)mask.height);
+		bw.Write((ushort)mask.Width);
+		bw.Write((ushort)mask.Height);
 		bw.Write(mask.Data.Length);
 		bw.Write(comp, 0, compressedSize);
 
