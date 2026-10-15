@@ -229,15 +229,15 @@ public class PakBuilder
 	{
 		byte[] uncomp = mask.Data;
 
-		byte[] comp = new byte[LZ4Codec.MaximumOutputSize(uncomp.Length)];
-		int compressedSize = LZ4Codec.Encode(
+		byte[] comp = new byte[K4os.Compression.LZ4.LZ4Codec.MaximumOutputSize(uncomp.Length)];
+		int compressedSize = K4os.Compression.LZ4.LZ4Codec.Encode(
 			uncomp,
 			0,
 			uncomp.Length,
 			comp,
 			0,
 			comp.Length,
-			LZ4Level.L09_HC
+			K4os.Compression.LZ4.LZ4Level.L09_HC
 		);
 
 		var ms = new MemoryStream();
