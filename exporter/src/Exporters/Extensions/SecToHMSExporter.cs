@@ -12,7 +12,7 @@ public class SecToHMSExporter : ExtensionExporter
 
 	public override string ExportExtension(byte[] extensionData)
 	{
-		// No props
+		return CreateExtension("");
 	}
 
 	public override string ExportCondition(EventBase eventBase, int conditionNum, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (", bool isGlobal = false)
@@ -37,7 +37,7 @@ public class SecToHMSExporter : ExtensionExporter
 		switch (actionNum)
 		{
 			case 0:
-				result.AppendLine($"{ifStatement} {GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->ConvertSeconds({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)})) goto {nextLabel};");
+				result.AppendLine($"ifStatement {GetExtensionInstance(eventBase.ObjectInfo, eventBase.ObjectType)}->ConvertSeconds({ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[0].Loader, eventBase)})) goto {nextLabel};");
 				break;
 			default:
 				result.AppendLine($"// Seconds to HMS action {actionNum} not implemented");
