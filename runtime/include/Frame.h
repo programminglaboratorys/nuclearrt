@@ -360,12 +360,26 @@ public:
 		return Loopindex(name.GetStringValue());
 	}
 
+	static inline int CounterImageIndex(char c)
+	{
+		if (c >= '0' && c <= '9') return c - '0';  // 0..9
+		switch (c) {
+		case '-': return 10;
+		case '+': return 11;
+		case '.': return 12;
+		case 'e': return 13;
+		}
+		return -1; // unknown
+	}
+
 	virtual void OnLoop(const std::string& loopName) {}
 	virtual void OnTimerEvent(const std::string& eventName) {}
 	virtual void GenerateEvent(int objectType, int conditionNum, ObjectInstance* source = nullptr) {}
 
 	//Collision detection
 	CollisionInstanceBounds GetInstanceBounds(ObjectInstance* instance);
+	bool IsRotatedOutsideView(ObjectInstance* instance, int offsetX, int offsetY, int viewWidth, int viewHeight);
+	bool IsOutsideView(ObjectInstance* instance, int offsetX, int offsetY, int viewWidth, int viewHeight);
 	bool IsPointInRotatedBox(int worldX, int worldY, const CollisionInstanceBounds& bounds);
 	bool IsPixelSolid(const std::vector<uint8_t>& maskData, int width, int height, int x, int y);
 
