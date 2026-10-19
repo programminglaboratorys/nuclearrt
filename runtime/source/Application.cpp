@@ -172,10 +172,12 @@ void Application::LoadFrame(int frameIndex)
 	backend->platform->Log("Loading frame " + std::to_string(frameIndex));
 	std::vector<unsigned int> oldImagesUsed;
 	std::vector<unsigned int> oldFontsUsed;
+	std::vector<unsigned int> oldSoundsUsed;
 	if (currentFrame != nullptr)
 	{
 		oldImagesUsed = currentFrame->GetImagesUsed();
 		oldFontsUsed = currentFrame->GetFontsUsed();
+		oldSoundsUsed = currentFrame->GetSoundsUsed();
 
 		// merge current frame's global object data with existing data
 		std::vector<ObjectGlobalData*> frameData = currentFrame->GetGlobalObjectData();
@@ -200,9 +202,12 @@ void Application::LoadFrame(int frameIndex)
 	
 	std::vector<unsigned int> newImagesUsed = currentFrame->GetImagesUsed();
 	std::vector<unsigned int> newFontsUsed = currentFrame->GetFontsUsed();
+	std::vector<unsigned int> newSoundsUsed = currentFrame->GetSoundsUsed();
 
 	std::vector<unsigned int> imagesToUnload;
 	std::vector<unsigned int> fontsToUnload;
+	std::vector<unsigned int> soundsToUnload;
+
 	for (unsigned int image : oldImagesUsed)
 	{
 		if (std::find(newImagesUsed.begin(), newImagesUsed.end(), image) == newImagesUsed.end())
@@ -216,6 +221,14 @@ void Application::LoadFrame(int frameIndex)
 		if (std::find(newFontsUsed.begin(), newFontsUsed.end(), font) == newFontsUsed.end())
 		{
 			fontsToUnload.push_back(font);
+		}
+	}
+
+	for (unsigned int sound : oldSoundsUsed)
+	{
+		if (std::find(newSoundsUsed.begin(), newSoundsUsed.end(), sound) == newSoundsUsed.end())
+		{
+			soundsToUnload.push_back(sound);
 		}
 	}
 
@@ -241,6 +254,18 @@ void Application::LoadFrame(int frameIndex)
 	for (unsigned int font : fontsToUnload)
 	{
 		backend->graphics->UnloadFont(font);
+	}
+
+	//unload the sounds that are no longer used
+	for (unsigned int sound : soundsToUnload)
+	{
+		backend->audio->UnloadSound(sound);
+	}
+
+	//load the sounds that are new
+	for (unsigned int sound : newSoundsUsed)
+	{
+		backend->audio->LoadSound(sound);
 	}
 
 	backend->platform->Log("Loaded frame " + std::to_string(frameIndex));

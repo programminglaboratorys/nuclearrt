@@ -78,6 +78,7 @@ public class FrameExporter : BaseExporter
 		frameCpp = frameCpp.Replace("{{ OBJECT_INSTANCES }}", BuildObjectInstances(frame));
 		frameCpp = frameCpp.Replace("{{ OBJECT_SELECTORS_INIT }}", BuildObjectSelectorsInit(frame));
 		frameCpp = frameCpp.Replace("{{ GROUP_ACTIVE }}", BuildGroupActive(frameIndex));
+		frameCpp = frameCpp.Replace("{{ SOUNDS_USED }}", BuildSoundsUsed(frame));
 
 		_eventProcessor.PreProcessFrame(frameIndex);
 
@@ -102,6 +103,23 @@ public class FrameExporter : BaseExporter
 		frameHeader = frameHeader.Replace("{{ ONLY_ONE_ACTION_WHEN_LOOP_CONDITION }}", _eventProcessor.BuildOneActionLoop(frameIndex));
 
 		return frameHeader;
+	}
+
+	private string BuildSoundsUsed(Frame frame)
+	{
+		var preloadHandles = GameData.Sounds.Items.Where(s => ((s.Flags & 0x10) == 0)).Select(s => (int)s.Handle - 1).ToHashSet(); // events and the runtime SoundBank key sounds by Handle - 1
+		var used = new SortedSet<int>();
+		foreach (var evt in frame.events.Items)
+		{
+			foreach (var evtBase in evt.Conditions.Cast<EventBase>().Concat(evt.Actions))
+			{
+				foreach (var param in evtBase.Items)
+				{
+					if (param.Loader is Sample sample && preloadHandles.Contains(sample.Handle)) used.Add(sample.Handle);
+				}
+			}
+		}
+		return string.Join(", ", used);
 	}
 
 	private string BuildLayers(CTFAK.CCN.Chunks.Frame.Frame frame)

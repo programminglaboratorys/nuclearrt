@@ -11,6 +11,11 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 set(BACKEND_OPTIONS "SDL3" "SDL2")
 set(DEFAULT_PLATFORM_BACKEND "SDL3")
 
+#switch only supports SDL2
+if(NINTENDO_SWITCH)
+    set(DEFAULT_PLATFORM_BACKEND "SDL2")
+endif()
+
 set(PLATFORM_BACKEND "${DEFAULT_PLATFORM_BACKEND}" CACHE STRING "Select the platform backend")
 
 set_property(CACHE PLATFORM_BACKEND PROPERTY STRINGS ${BACKEND_OPTIONS})
@@ -96,6 +101,23 @@ elseif(PLATFORM_BACKEND STREQUAL "SDL2")
 endif()
 
 include(cmake/lz4.cmake)
+
+if(PLATFORM_SWITCH)
+    nx_generate_nacp(
+        OUTPUT ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.nacp
+        NAME "NuclearRT Runtime"
+        AUTHOR "shishkabob"
+        VERSION "1.0.0"
+    )
+
+    file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/romfs)
+
+    nx_create_nro(${PROJECT_NAME}
+        OUTPUT ${CMAKE_BINARY_DIR}/bin/${PROJECT_NAME}.nro
+        NACP ${CMAKE_BINARY_DIR}/${PROJECT_NAME}.nacp
+        ROMFS ${CMAKE_BINARY_DIR}/romfs
+    )
+endif()
 
 # Install target
 if(PLATFORM_MACOS)

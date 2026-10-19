@@ -1,5 +1,12 @@
 add_compile_definitions(NUCLEAR_BACKEND_SDL2)
 
+if(PLATFORM_SWITCH)
+    #Switch uses the DevKitPro packages instead
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(SDL2_SWITCH REQUIRED IMPORTED_TARGET sdl2 SDL2_ttf)
+    return()
+endif()
+
 if(PLATFORM_IOS)
     set(SDL_SHARED OFF CACHE BOOL "" FORCE)
     set(SDL_STATIC ON CACHE BOOL "" FORCE)

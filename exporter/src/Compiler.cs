@@ -8,136 +8,108 @@ public class Compiler
 
 		if (buildType == BuildType.WindowsDebug || buildType == BuildType.WindowsRelease)
 		{
-			//make 'build/windows' directory
 			DirectoryInfo buildDir = new DirectoryInfo(Path.Combine(outputPath.FullName, "build", "windows"));
 			buildDir.Create();
 
 			CTFAK.Utils.Logger.Log($"Running CMake to generate the project files...");
-			ProcessStartInfo cmakeProjectInfo = new ProcessStartInfo("cmake", "../..");
-			cmakeProjectInfo.WorkingDirectory = Path.Combine(outputPath.FullName, "build", "windows");
-			cmakeProjectInfo.CreateNoWindow = true;
-			cmakeProjectInfo.UseShellExecute = false;
-			cmakeProjectInfo.RedirectStandardOutput = true;
-			cmakeProjectInfo.RedirectStandardError = true;
-			Process cmakeProcess = Process.Start(cmakeProjectInfo);
+			int cmakeExitCode = RunProcess("cmake", "../..", Path.Combine(outputPath.FullName, "build", "windows"));
 
-			cmakeProcess.OutputDataReceived += (sender, e) =>
+			if (cmakeExitCode != 0)
 			{
-				CTFAK.Utils.Logger.Log(e.Data);
-			};
-
-			cmakeProcess.ErrorDataReceived += (sender, e) =>
-			{
-				CTFAK.Utils.Logger.Log(e.Data);
-			};
-
-			cmakeProcess.BeginOutputReadLine();
-			cmakeProcess.BeginErrorReadLine();
-			cmakeProcess.WaitForExit();
-
-			if (cmakeProcess.ExitCode != 0)
-			{
-				CTFAK.Utils.Logger.Log($"CMake failed with exit code {cmakeProcess.ExitCode}");
+				CTFAK.Utils.Logger.Log($"CMake failed with exit code {cmakeExitCode}");
 				throw new Exception("CMake failed to generate the project files");
 			}
 
 			CTFAK.Utils.Logger.Log($"Building...");
-			ProcessStartInfo buildInfo = new ProcessStartInfo("cmake", "--build . --config " + (buildType == BuildType.WindowsDebug ? "Debug" : "Release"));
-			buildInfo.WorkingDirectory = Path.Combine(outputPath.FullName, "build", "windows");
-			buildInfo.CreateNoWindow = true;
-			buildInfo.UseShellExecute = false;
-			buildInfo.RedirectStandardOutput = true;
-			buildInfo.RedirectStandardError = true;
-			Process buildProcess = Process.Start(buildInfo);
+			int buildExitCode = RunProcess("cmake", "--build . --config " + (buildType == BuildType.WindowsDebug ? "Debug" : "Release"), Path.Combine(outputPath.FullName, "build", "windows"));
 
-			buildProcess.OutputDataReceived += (sender, e) =>
+			if (buildExitCode != 0)
 			{
-				CTFAK.Utils.Logger.Log(e.Data);
-			};
-
-			buildProcess.ErrorDataReceived += (sender, e) =>
-			{
-				CTFAK.Utils.Logger.Log(e.Data);
-			};
-
-			buildProcess.BeginOutputReadLine();
-			buildProcess.BeginErrorReadLine();
-			buildProcess.WaitForExit();
-
-			if (buildProcess.ExitCode != 0)
-			{
-				CTFAK.Utils.Logger.Log($"Build failed with exit code {buildProcess.ExitCode}");
+				CTFAK.Utils.Logger.Log($"Build failed with exit code {buildExitCode}");
 				throw new Exception("Build failed");
 			}
+
 		}
 		else if (buildType == BuildType.Web)
 		{
 			DirectoryInfo buildDir = new DirectoryInfo(Path.Combine(outputPath.FullName, "build", "web"));
 			buildDir.Create();
 
-			CTFAK.Utils.Logger.Log($"Running CMake to generate the project files...");
-			ProcessStartInfo cmakeProjectInfo = new ProcessStartInfo(
-				"cmd.exe",
-				"/c emcmake cmake ../.. -DCMAKE_BUILD_TYPE=Release -G Ninja"
-			);
-			cmakeProjectInfo.WorkingDirectory = Path.Combine(outputPath.FullName, "build", "web");
-			cmakeProjectInfo.CreateNoWindow = true;
-			cmakeProjectInfo.UseShellExecute = false;
-			cmakeProjectInfo.RedirectStandardOutput = true;
-			cmakeProjectInfo.RedirectStandardError = true;
-			Process cmakeProcess = Process.Start(cmakeProjectInfo);
+			CTFAK.Utils.Logger.Log($"Running emcmake cmake to generate the project files...");
+			int cmakeExitCode = RunProcess("cmd.exe", "/c emcmake cmake ../.. -DCMAKE_BUILD_TYPE=Release -G Ninja", Path.Combine(outputPath.FullName, "build", "web"));
 
-			cmakeProcess.OutputDataReceived += (sender, e) =>
+			if (cmakeExitCode != 0)
 			{
-				CTFAK.Utils.Logger.Log(e.Data);
-			};
-
-			cmakeProcess.ErrorDataReceived += (sender, e) =>
-			{
-				CTFAK.Utils.Logger.Log(e.Data);
-			};
-
-			cmakeProcess.BeginOutputReadLine();
-			cmakeProcess.BeginErrorReadLine();
-			cmakeProcess.WaitForExit();
-
-			if (cmakeProcess.ExitCode != 0)
-			{
-				CTFAK.Utils.Logger.Log($"CMake failed with exit code {cmakeProcess.ExitCode}");
+				CTFAK.Utils.Logger.Log($"CMake failed with exit code {cmakeExitCode}");
 				throw new Exception("CMake failed to generate the project files");
 			}
 
 			CTFAK.Utils.Logger.Log($"Building...");
-			ProcessStartInfo buildInfo = new ProcessStartInfo(
-				"cmd.exe",
-				"/c cmake --build . --config Release"
-			);
-			buildInfo.WorkingDirectory = Path.Combine(outputPath.FullName, "build", "web");
-			buildInfo.CreateNoWindow = true;
-			buildInfo.UseShellExecute = false;
-			buildInfo.RedirectStandardOutput = true;
-			buildInfo.RedirectStandardError = true;
-			Process buildProcess = Process.Start(buildInfo);
+			int buildExitCode = RunProcess("cmd.exe", "/c cmake --build . --config Release", Path.Combine(outputPath.FullName, "build", "web"));
 
-			buildProcess.OutputDataReceived += (sender, e) =>
+			if (buildExitCode != 0)
 			{
-				CTFAK.Utils.Logger.Log(e.Data);
-			};
-
-			buildProcess.ErrorDataReceived += (sender, e) =>
-			{
-				CTFAK.Utils.Logger.Log(e.Data);
-			};
-
-			buildProcess.BeginOutputReadLine();
-			buildProcess.BeginErrorReadLine();
-			buildProcess.WaitForExit();
-
-			if (buildProcess.ExitCode != 0)
-			{
-				CTFAK.Utils.Logger.Log($"Build failed with exit code {buildProcess.ExitCode}");
+				CTFAK.Utils.Logger.Log($"Build failed with exit code {buildExitCode}");
 				throw new Exception("Build failed");
 			}
 		}
+		else if (buildType == BuildType.Switch)
+		{
+			string projectDir = ToWslPath(outputPath.FullName);
+			string buildDir = $"{projectDir}/build/switch";
+
+			string command = $"bash -ic \"source /etc/profile.d/devkit-env.sh && catnip -T Switch -S '{projectDir}' -B '{buildDir}'\"";
+
+			int wslExitCode = RunProcess("wsl", command);
+			if (wslExitCode != 0)
+			{
+				CTFAK.Utils.Logger.Log($"WSL failed with exit code {wslExitCode}");
+				throw new Exception("WSL failed to generate the project files");
+			}
+		}
+	}
+
+	static string ToWslPath(string windowsPath)
+	{
+		string full = Path.GetFullPath(windowsPath).Replace('\\', '/');
+		return "/mnt/" + char.ToLowerInvariant(full[0]) + full[2..];
+	}
+
+	static int RunProcess(string command, string arguments = "", string workingDirectory = "")
+	{
+		ProcessStartInfo processInfo = new ProcessStartInfo(command, arguments);
+		processInfo.WorkingDirectory = workingDirectory;
+		processInfo.CreateNoWindow = true;
+		processInfo.UseShellExecute = false;
+		processInfo.RedirectStandardOutput = true;
+		processInfo.RedirectStandardError = true;
+		Process? process = Process.Start(processInfo);
+
+		if (process == null)
+		{
+			throw new Exception($"Failed to start process {command} {arguments}");
+		}
+
+		process.OutputDataReceived += (sender, e) =>
+		{
+			if (e.Data != null)
+			{
+				CTFAK.Utils.Logger.Log(e.Data);
+			}
+		};
+
+		process.ErrorDataReceived += (sender, e) =>
+		{
+			if (e.Data != null)
+			{
+				CTFAK.Utils.Logger.Log(e.Data);
+			}
+		};
+
+		process.BeginOutputReadLine();
+		process.BeginErrorReadLine();
+		process.WaitForExit();
+
+		return process.ExitCode;
 	}
 }

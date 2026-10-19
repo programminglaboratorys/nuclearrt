@@ -13,6 +13,7 @@ public class KcRuntimeExporter : ExtensionExporter
 	public override string ExportExtension(byte[] extensionData)
 	{
 		// No props
+		return string.Empty;
 	}
 
 	public override string ExportCondition(EventBase eventBase, int conditionNum, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (", bool isGlobal = false)
