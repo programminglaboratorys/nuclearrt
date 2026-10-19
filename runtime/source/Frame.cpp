@@ -969,25 +969,6 @@ CollisionInstanceBounds Frame::GetInstanceBounds(ObjectInstance* instance) {
 	return result;
 }
 
-bool Frame::IsOutsideView(ObjectInstance* instance, int offsetX, int offsetY, int viewWidth, int viewHeight) {
-	CollisionInstanceBounds bounds = GetInstanceBounds(instance);
-	return bounds.maxX - offsetX < 0 || bounds.minX - offsetX > viewWidth ||
-		bounds.maxY - offsetY < 0 || bounds.minY - offsetY > viewHeight;
-}
-
-bool Frame::IsRotatedOutsideView(ObjectInstance* instance, int offsetX, int offsetY, int viewWidth, int viewHeight) {
-	CollisionInstanceBounds bounds = GetInstanceBounds(instance);
-	int dx = std::max<int>(bounds.hotspotX, bounds.width - bounds.hotspotX);
-	int dy = std::max<int>(bounds.hotspotY, bounds.height - bounds.hotspotY);
-	int radius = (int)std::ceil(std::sqrt((double)dx * dx + (double)dy * dy));
-	int cx = bounds.centerX - offsetX;
-	int cy = bounds.centerY - offsetY;
-
-	return cx + radius < 0 || cx - radius > viewWidth ||
-		cy + radius < 0 || cy - radius > viewHeight;
-}
-
-
 bool Frame::IsPointInRotatedBox(int worldX, int worldY, const CollisionInstanceBounds& bounds) {
 	float dx = worldX - bounds.centerX + bounds.scrollX;
 	float dy = worldY - bounds.centerY + bounds.scrollY;
