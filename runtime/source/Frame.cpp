@@ -5,6 +5,7 @@
 #include <math.h>
 #include <unordered_map>
 #include <charconv>
+#include <cassert>
 
 #include "Application.h"
 #include "Active.h"
@@ -469,8 +470,11 @@ void Frame::DrawLayer(Layer& layer)
 
 void Frame::DrawCounterNumbers(CounterBase* counter, int value, int x, int y)
 {
-	// due to intDigitCount being int8_t, it means the buf can be up to 128 in theory
-	char buf[128];
+	// value is a 32-bit int: at most 10 digits (2147483647), plus one char for '-'
+	constexpr int kMaxCounterDigits = 10;
+	constexpr int kMaxCounterChars = kMaxCounterDigits + 1;
+	assert(counter->IntDigitCount <= kMaxCounterDigits); // assert incase it was not intended
+	char buf[kMaxCounterChars];
 	auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), value);
 
 	int stringSize = ptr - buf;
@@ -503,7 +507,7 @@ void Frame::DrawCounterNumbers(CounterBase* counter, int value, int x, int y)
 
 	//Counter char map
 	const ImageBank& imageBank = ImageBank::Instance();
-	const ImageInfo* images[128];
+	const ImageInfo* images[kMaxCounterChars];
 
 	int totalWidth = 0;
 	int MaxHeight = 0;
