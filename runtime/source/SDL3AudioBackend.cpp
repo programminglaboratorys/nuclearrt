@@ -102,12 +102,16 @@ void SDL3AudioBackend::Initialize()
 void SDL3AudioBackend::Deinitialize()
 {	
 	AudioStreamLock lock(masterStream);
+
 	// Close the Audio Device
 	SDL_PauseAudioDevice(audio_device);
 	SDL_SetAudioStreamGetCallback(masterStream, NULL, NULL);
 	SDL_ClearAudioStream(masterStream);
+	
 	// cleanup audio
+	while (!soundCache.empty()) UnloadSound(soundCache.begin()->first);
 	while (!sampleFiles.empty()) DiscardSampleFile(sampleFiles.begin()->first);
+
 	for (int i = 1; i < SDL_arraysize(channels); i++) {
 		if (!channels[i].stream) continue;
 		if (channels[i].data) {
@@ -130,6 +134,7 @@ void SDL3AudioBackend::Deinitialize()
 
 bool SDL3AudioBackend::LoadSample(int id, int channel) {
 	AudioStreamLock lock(masterStream);
+	if (channel == 0) lock.Unlock();
 
 	if (id < 0) return false;
 	if (channels[channel].data && channels[channel].curHandle == id) {
@@ -140,6 +145,21 @@ bool SDL3AudioBackend::LoadSample(int id, int channel) {
 		backend->GetPlatform()->Log("SoundBank Error: Sound ID " + std::to_string(id) + " not found!");
 		return false;
 	}
+
+	// load from cache
+	if (channel != 0) {
+		auto cached = soundCache.find(id);
+		if (cached != soundCache.end()) {
+			SampleFile& sound = cached->second;
+			channels[channel].data = (Uint8*)SDL_malloc(sound.data_len);
+			SDL_memcpy(channels[channel].data, sound.data, sound.data_len);
+			channels[channel].data_len = sound.data_len;
+			channels[channel].spec = sound.spec;
+			channels[channel].name = soundInfo->Name;
+			return true;
+		}
+	}
+	
 	std::vector<uint8_t> data = backend->platform->GetPakFile().GetData("sounds/" + std::to_string(id) + "." + soundInfo->Type);
 	if (data.empty()) {
 		backend->GetPlatform()->Log("PakFile::GetData Error: Sample with id " + std::to_string(id) + " not found");
@@ -204,6 +224,29 @@ bool SDL3AudioBackend::LoadSample(int id, int channel) {
 	channels[channel].name = soundInfo->Name;
 	return true;
 }
+
+bool SDL3AudioBackend::LoadSound(int id) {
+	if (soundCache.count(id)) return true;
+	if (!LoadSample(id, 0)) return false;
+
+	SampleFile& sound = soundCache[id];
+	sound.data = channels[0].data;
+	sound.data_len = channels[0].data_len;
+	sound.spec = channels[0].spec;
+	channels[0].data = nullptr;
+	channels[0].data_len = 0;
+	channels[0].name = "";
+
+	return true;
+}
+
+void SDL3AudioBackend::UnloadSound(int id) {
+	auto it = soundCache.find(id);
+	if (it == soundCache.end()) return;
+	SDL_free(it->second.data);
+	soundCache.erase(it);
+}
+
 bool SDL3AudioBackend::LoadSampleFile(std::string path) {
 	AudioStreamLock lock(masterStream);
 	backend->GetPlatform()->Log("Loading Sample File : " + path);

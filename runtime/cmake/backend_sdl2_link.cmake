@@ -1,3 +1,9 @@
+if(PLATFORM_SWITCH)
+    #Switch uses the DevKitPro packages instead
+    target_link_libraries(${PROJECT_NAME} PUBLIC PkgConfig::SDL2_SWITCH)
+    return()
+endif()
+
 #copy SDL3 dlls
 if(PLATFORM_WINDOWS)
     message(STATUS "Copying SDL2 dlls to output directory")

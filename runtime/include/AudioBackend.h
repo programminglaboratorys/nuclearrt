@@ -9,6 +9,8 @@ public:
 	virtual void Deinitialize() {}
 
 	virtual bool LoadSample(int id, int channel) {return false;}
+	virtual bool LoadSound(int id) {return false;}
+	virtual void UnloadSound(int id) {}
 	virtual bool LoadSampleFile(std::string path) {return false;}
 	virtual int FindSample(std::string name) {return -1;}
 	virtual void PlaySample(int id, int channel, int loops, int freq, bool uninterruptable, float volume, float pan) {}

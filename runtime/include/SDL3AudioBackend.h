@@ -44,6 +44,8 @@ public:
 
 	static void SDLCALL AudioCallback(void* userdata, SDL_AudioStream* stream, int additional_amount, int total_amount);
 	bool LoadSample(int id, int channel) override;
+	bool LoadSound(int id) override;
+	void UnloadSound(int id) override;
 	bool LoadSampleFile(std::string path) override;
 	int FindSample(std::string name) override;
 	void PlaySample(int id, int channel, int loops, int freq, bool uninterruptable, float volume, float pan) override;
@@ -75,7 +77,8 @@ private:
 	float mainPan = 0.0f;
 
 	std::unordered_map<std::string, SampleFile> sampleFiles;
-	Channel channels[49]; // 48 will be the last element.
+	std::unordered_map<int, SampleFile> soundCache;
+	Channel channels[49]; // 48 will be the last element, 0 is used for preloading sounds
 	SDL_AudioStream* masterStream;
 	bool sampleFocusGainApplied = false;
 	bool lastWindowFocused = true;
