@@ -27,14 +27,14 @@ public:
 		return instance;
 	}
 
-	std::shared_ptr<AppData> GetAppData() const { return appData; }
-	void SetAppData(std::shared_ptr<AppData> data) { appData = data; }
+	AppData* GetAppData() const { return appData; }
+	void SetAppData(AppData* data) { appData = data; }
 
-	std::shared_ptr<Backend> GetBackend() const { return backend; }
-    void SetBackend(std::shared_ptr<Backend> b) { backend = b; }
+	Backend* GetBackend() const { return backend; }
+    void SetBackend(Backend* b) { backend = b; }
 
-	std::shared_ptr<Input> GetInput() const { return input; }
-	void SetInput(std::shared_ptr<Input> i) { input = i; }
+	Input* GetInput() const { return input; }
+	void SetInput(Input* i) { input = i; }
 
 	std::unique_ptr<Frame>& GetCurrentFrame() { return currentFrame; }
 
@@ -64,9 +64,9 @@ public:
 	Application& operator=(const Application&) = delete;
 
 private:
-	std::shared_ptr<AppData> appData;
-	std::shared_ptr<Backend> backend;
-	std::shared_ptr<Input> input;
+	AppData* appData = nullptr;
+	Backend* backend = nullptr;
+	Input* input = nullptr;
 	
 	std::unique_ptr<Frame> currentFrame;
 	void LoadFrame(int frameIndex);
