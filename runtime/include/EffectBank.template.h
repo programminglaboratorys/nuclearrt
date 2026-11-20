@@ -1,11 +1,11 @@
 #pragma once
-
 #include "EffectInstance.h"
+
+static EffectBank instance;
 
 class EffectBank {
 public:
     static EffectBank& Instance() {
-        static EffectBank instance;
         return instance;
     }
 

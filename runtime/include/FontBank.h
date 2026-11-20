@@ -1,8 +1,9 @@
 #pragma once
-
 #include <unordered_map>
 #include <string>
 #include <memory>
+
+static FontBank instance;
 
 struct FontInfo {
     unsigned int Handle;
@@ -27,7 +28,6 @@ struct FontInfo {
 class FontBank {
 public:
     static FontBank& Instance() {
-        static FontBank instance;
         return instance;
     }
     
