@@ -2,6 +2,9 @@
 #include "FrameFactory.h"
 #include "Frame.h"
 #include <set>
+#ifndef NUCLEAR_DISABLE_DEBUG_UI
+#include "DebugUI.h"
+#endif
 
 #ifdef NUCLEAR_BACKEND_SDL3
 #include "SDL3Backend.h"
@@ -20,21 +23,21 @@ Application::~Application() = default;
 
 void Application::Initialize()
 {
-	appData = std::make_shared<AppData>();
+	appData = new AppData();
 	appData->Initialize();
 	std::cout << "Initialized AppData" << std::endl;
 
 	#ifdef NUCLEAR_BACKEND_SDL3
-		backend = std::make_shared<SDL3Backend>();
+		backend = new SDL3Backend();
 	#elif NUCLEAR_BACKEND_SDL2
-		backend = std::make_shared<SDL2Backend>();
+		backend = new SDL2Backend();
 	#else
-		backend = std::make_shared<Backend>();
+		backend = new Backend();
 	#endif
 
 	backend->platform->Log("Initialized Backend: " + backend->platform->GetName());
 
-	input = std::make_shared<Input>();
+	input = new Input();
 	input->Reset();
 	backend->platform->Log("Initialized Input");
 
@@ -95,7 +98,14 @@ void Application::Run()
 		
 		frameStart = backend->platform->GetTicks();
 		
+#ifndef NUCLEAR_DISABLE_DEBUG_UI
+		DEBUG_UI.MarkFrameStart();
+#endif
 		Loop();
+		
+#ifndef NUCLEAR_DISABLE_DEBUG_UI
+		DEBUG_UI.MarkWorkEnd();
+#endif
 		
 		frameTime = backend->platform->GetTicks() - frameStart;
 		

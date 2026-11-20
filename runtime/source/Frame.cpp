@@ -4,6 +4,8 @@
 #include <algorithm>
 #include <math.h>
 #include <unordered_map>
+#include <charconv>
+#include <cassert>
 
 #include "Application.h"
 #include "Active.h"
@@ -25,6 +27,7 @@ void Frame::Initialize()
 void Frame::PostInitialize()
 {
 }
+std::vector<unsigned int> handles;
 
 void Frame::Update()
 {
@@ -35,8 +38,7 @@ void Frame::Update()
 	scrollDirty = false;
 
 	DispatchTrueEvents();
-
-	std::vector<unsigned int> handles;
+	handles.clear();
 	handles.reserve(ObjectInstances.size());
 	for (auto& [handle, instance] : ObjectInstances)
 	{
@@ -295,6 +297,7 @@ void Frame::DrawLayer(Layer& layer)
 {
 	const int viewWidth = Application::Instance().GetAppData()->GetWindowWidth();
 	const int viewHeight = Application::Instance().GetAppData()->GetWindowHeight();
+	GraphicsBackend* graphics = Application::Instance().GetBackend()->graphics;
 
 	for (auto& instance : layer.instances)
 	{
@@ -332,7 +335,7 @@ void Frame::DrawLayer(Layer& layer)
 			auto& imageBank = ImageBank::Instance();
 			unsigned int imageId = ((Backdrop*)instance)->Image;
 
-			Application::Instance().GetBackend()->graphics->DrawTexture(
+			graphics->DrawTexture(
 				imageId, instance->GetX().GetIntValue() - (scrollX * layer.XCoefficient), instance->GetY().GetIntValue() - (scrollY * layer.YCoefficient),
 				0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
 		}
@@ -362,7 +365,7 @@ void Frame::DrawLayer(Layer& layer)
 					}
 				}
 
-				Application::Instance().GetBackend()->graphics->DrawTexture(
+				graphics->DrawTexture(
 					imageId, instance->GetX().GetIntValue() - scrollX, instance->GetY().GetIntValue() - scrollY,
 					imageInfo->HotspotX, imageInfo->HotspotY, 
 					angle, ((Active*)instance)->GetXScale().GetDoubleValue(), ((Active*)instance)->GetYScale().GetDoubleValue(), instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
@@ -373,7 +376,7 @@ void Frame::DrawLayer(Layer& layer)
 			if (!((StringObject*)instance)->Visible) continue;
 
 			std::string text = ((StringObject*)instance)->GetText().GetStringValue();
-			Application::Instance().GetBackend()->graphics->DrawText(
+			graphics->DrawText(
 				FontBank::Instance().GetFont(((StringObject*)instance)->GetFont()),
 				instance->GetX().GetIntValue() - scrollX,
 				instance->GetY().GetIntValue() - scrollY,
@@ -403,7 +406,7 @@ void Frame::DrawLayer(Layer& layer)
 			}
 			else if (counter->DisplayType == 2 || counter->DisplayType == 3) // Bar
 			{
-				Application::Instance().GetBackend()->graphics->DrawCounterBar(instance->GetX().GetIntValue() - scrollX, instance->GetY().GetIntValue() - scrollY, (Counter*)counter);
+				graphics->DrawCounterBar(instance->GetX().GetIntValue() - scrollX, instance->GetY().GetIntValue() - scrollY, (Counter*)counter);
 			}
 			else if (counter->DisplayType == 4) // Animation
 			{
@@ -422,7 +425,7 @@ void Frame::DrawLayer(Layer& layer)
 							y += imageHeight;
 						}
 
-						Application::Instance().GetBackend()->graphics->DrawTexture(counter->Frames[0], x, y, 0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
+						graphics->DrawTexture(counter->Frames[0], x, y, 0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
 						x += imageWidth;
 					}
 				}
@@ -450,8 +453,7 @@ void Frame::DrawLayer(Layer& layer)
 					}
 					
 					imageID = counter->Frames[frameIndex];
-
-					Application::Instance().GetBackend()->graphics->DrawTexture(imageID, instance->GetX().GetIntValue() - scrollX, instance->GetY().GetIntValue() - scrollY, 0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
+					graphics->DrawTexture(imageID, instance->GetX().GetIntValue() - scrollX, instance->GetY().GetIntValue() - scrollY, 0, 0, 0, 1.0f, 1.0f, instance->RGBCoefficient, instance->Effect, instance->GetBlendCoefficient().GetIntValue(), instance->effectInstance);
 				}
 			}
 		}
@@ -459,7 +461,7 @@ void Frame::DrawLayer(Layer& layer)
 		{
 			int scrollXOffset = scrollX * layer.XCoefficient;
 			int scrollYOffset = scrollY * layer.YCoefficient;
-			Application::Instance().GetBackend()->graphics->DrawQuickBackdrop(instance->GetX().GetIntValue() - scrollXOffset, instance->GetY().GetIntValue() - scrollYOffset, ((QuickBackdrop*)instance)->Width, ((QuickBackdrop*)instance)->Height, &((QuickBackdrop*)instance)->shape);
+			graphics->DrawQuickBackdrop(instance->GetX().GetIntValue() - scrollXOffset, instance->GetY().GetIntValue() - scrollYOffset, ((QuickBackdrop*)instance)->Width, ((QuickBackdrop*)instance)->Height, &((QuickBackdrop*)instance)->shape);
 		}
 		else if (instance->Type >= 32) // Extension
 		{
@@ -469,88 +471,78 @@ void Frame::DrawLayer(Layer& layer)
 	}
 }
 
-void Frame::DrawCounterNumbers(CounterBase *counter, int value, int x, int y)
+
+void Frame::DrawCounterNumbers(CounterBase* counter, int value, int x, int y)
 {
-	std::string valueString = std::to_string(value);
-	int numDigits = valueString.size();
+	// value is a 32-bit int: at most 10 digits (2147483647), plus one char for '-'
+	constexpr int kMaxCounterDigits = 10;
+	constexpr int kMaxCounterChars = kMaxCounterDigits + 1;
+	assert(counter->IntDigitCount <= kMaxCounterDigits); // assert incase it was not intended
+	char buf[kMaxCounterChars];
+	auto [ptr, ec] = std::to_chars(buf, buf + sizeof(buf), value);
 
-	if (counter->IntDigitCount > 0) numDigits = counter->IntDigitCount;
-
-	bool negative = false;
-	if (value < 0)
-	{
-		negative = true;
-		valueString = valueString.substr(1);
-	}
+	int stringSize = ptr - buf;
+	// std::to_chars
+	int8_t intDigitCount = counter->IntDigitCount;
+	bool negative = value < 0;
 
 	//Fixed Size
-	if (counter->IntDigitCount > 0)
+	if (intDigitCount > 0)
 	{
-		if (counter->IntDigitCount > valueString.size()) //Add leading zeros
+		int insertPos = negative ? 1 : 0;
+		// stringSize includes the '-', intDigitCount does not
+		int digitCount = stringSize - insertPos;
+
+		if (intDigitCount > digitCount) //Add leading zeros
 		{
-			while (valueString.size() < counter->IntDigitCount)
-			{
-				valueString = "0" + valueString;
-			}
+			int zeroCount = intDigitCount - digitCount;
+			// shift the existing digits to the right to make space for leading zeros
+			std::memmove(buf + insertPos + zeroCount, buf + insertPos, digitCount);
+			// fill leading zeros right after the sign
+			std::memset(buf + insertPos, '0', zeroCount);
 		}
 		else //Remove extra digits
 		{
-			valueString = valueString.substr(valueString.size() - counter->IntDigitCount);
+			std::memmove(buf + insertPos, buf + insertPos + (digitCount - intDigitCount), intDigitCount);
 		}
-	}		
 
-	if (negative)
-	{
-		valueString = "-" + valueString;
-		numDigits++;
+		stringSize = insertPos + intDigitCount;
 	}
 
 	//Counter char map
-	std::string charMap = "0123456789-+.e";
+	const ImageBank& imageBank = ImageBank::Instance();
+	const ImageInfo* images[kMaxCounterChars];
 
-	//get the total width of the string to be displayed
 	int totalWidth = 0;
-	for (int i = 0; i < numDigits; i++)
-	{
-		if (i >= valueString.size())
-		{
-			break;
-		}
-
-		int imageIndex = charMap.find(valueString[i]);
-		totalWidth += ImageBank::Instance().GetImage(counter->Frames[imageIndex])->Width;
-	}
-
-	//Get height of the tallest character displayed
 	int MaxHeight = 0;
-	for (int i = 0; i < numDigits; i++)
-	{
-		if (i >= valueString.size())
-		{
-			break;
-		}
 
-		int imageIndex = charMap.find(valueString[i]);
-		MaxHeight = std::max((unsigned short)MaxHeight, ImageBank::Instance().GetImage(counter->Frames[imageIndex])->Height);
+	for (int i = 0; i < stringSize; i++)
+	{
+		NR_SUPPRESS_WARNING(6385)
+		int imageIndex = CounterImageIndex(buf[i]);
+		const ImageInfo* imageInfo = imageBank.GetImage(counter->Frames[imageIndex]);
+		images[i] = imageInfo;
+		//Get height of the tallest character displayed
+		MaxHeight = std::max((unsigned short)MaxHeight, imageInfo->Height);
+		//get the total width of the string to be displayed
+		totalWidth += imageInfo->Width;
 	}
 
 	int currentX = x - totalWidth;
+	int currentY = y - MaxHeight;
+	int blend = counter->GetBlendCoefficient().GetIntValue();
+	GraphicsBackend* graphics = Application::Instance().GetBackend()->graphics;
 
 	//Draw
-	for (int i = 0; i < numDigits; i++)
+	for (int i = 0; i < stringSize; i++)
 	{
-		if (i >= valueString.size())
-		{
-			break;
-		}
-
-		int imageIndex = charMap.find(valueString[i]);
-		auto imageInfo = ImageBank::Instance().GetImage(counter->Frames[imageIndex]);
+		auto imageInfo = images[i];
 		if (imageInfo)
 		{
-			Application::Instance().GetBackend()->graphics->DrawTexture(
-				counter->Frames[imageIndex], currentX, y - MaxHeight,
-				0, 0, 0, 1.0f, 1.0f, counter->RGBCoefficient, counter->Effect, counter->GetBlendCoefficient().GetIntValue(), counter->effectInstance);
+			int imageIndex = CounterImageIndex(buf[i]);
+			graphics->DrawTexture(
+				counter->Frames[imageIndex], currentX, currentY,
+				0, 0, 0, 1.0f, 1.0f, counter->RGBCoefficient, counter->Effect, blend, counter->effectInstance);
 			currentX += imageInfo->Width;
 		}
 	}
@@ -821,25 +813,13 @@ bool Frame::IsCollidingWithBackground(ObjectInstance *instance)
 	// Check collision with all backdrop objects
 	for (auto& backdropInstance : Layers[instance->Layer].instances)
 	{
-		// Check only against (Quick) backdrop objects
-		if (backdropInstance->Type == 1)
-		{
-			Backdrop* backdrop = (Backdrop*)backdropInstance;
-			
-			// Check if this backdrop is an obstacle
-			if (backdrop->ObstacleType > 0) {
-				if (IsColliding(instance, backdrop)) return true;
-			}
+		if (backdropInstance->Type != 0 && backdropInstance->Type != 1) continue; // only check against backdrops
+		unsigned int obstacleType = (backdropInstance->Type == 0 ? ((QuickBackdrop*)backdropInstance)->ObstacleType : ((Backdrop*)backdropInstance)->ObstacleType);
+
+		if (obstacleType > 0) {
+			if (IsColliding(instance, backdropInstance)) return true;
 		}
-		else if (backdropInstance->Type == 0)
-		{
-			QuickBackdrop* quickBackdrop = (QuickBackdrop*)backdropInstance;
-			
-			// Check if this backdrop is an obstacle
-			if (quickBackdrop->ObstacleType > 0) {
-				if (IsColliding(instance, quickBackdrop)) return true;
-			}
-		}
+
 	}
 	
 	return false; // No collision with any backdrop
@@ -1023,7 +1003,7 @@ bool Frame::IsColliding(ObjectInstance *instance1, ObjectInstance *instance2)
 		imageId1 = ((Backdrop*)instance1)->Image;
 	} else if (instance1->Type == 3 || instance1->Type == 5 || instance1->Type == 6 || instance1->Type == 7) {
 		imageId1 = -1;
-	} else {
+	} else if (instance2->Type == 2) {
 		imageId1 = ((Active*)instance1)->animations.GetCurrentImageHandle();
 	}
 
@@ -1033,11 +1013,11 @@ bool Frame::IsColliding(ObjectInstance *instance1, ObjectInstance *instance2)
 		imageId2 = ((Backdrop*)instance2)->Image;
 	} else if (instance2->Type == 3 || instance2->Type == 5 || instance2->Type == 6 || instance2->Type == 7) {
 		imageId2 = -1;
-	} else {
+	} else if (instance2->Type == 2) {
 		imageId2 = ((Active*)instance2)->animations.GetCurrentImageHandle();
 	}
 	
-	Backend* backend = Application::Instance().GetBackend().get();
+	Backend* backend = Application::Instance().GetBackend();
 	const std::vector<uint8_t> *maskData1 = (unsigned int)imageId1 != -1 ? backend->platform->GetCollisionMaskData(imageId1) : nullptr;
 	const std::vector<uint8_t> *maskData2 = (unsigned int)imageId2 != -1 ? backend->platform->GetCollisionMaskData(imageId2) : nullptr;
 
@@ -1153,7 +1133,7 @@ bool Frame::IsColliding(ObjectInstance *instance, int x, int y)
 	if (!fineDetection)
 		return IsPointInRotatedBox(x, y, bounds);
 	
-	const std::vector<uint8_t>* maskData = Application::Instance().GetBackend().get()->platform->GetCollisionMaskData(imageId);
+	const std::vector<uint8_t>* maskData = Application::Instance().GetBackend()->platform->GetCollisionMaskData(imageId);
 	if (!maskData || maskData->empty())
 		return IsPointInRotatedBox(x, y, bounds);
 
