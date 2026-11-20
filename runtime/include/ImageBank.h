@@ -2,6 +2,8 @@
 
 #include <unordered_map>
 
+static ImageBank instance;
+
 struct ImageInfo {
     unsigned short Width;
     unsigned short Height;
@@ -18,7 +20,6 @@ struct ImageInfo {
 class ImageBank {
 public:
     static ImageBank& Instance() {
-        static ImageBank instance;
         return instance;
     }
     

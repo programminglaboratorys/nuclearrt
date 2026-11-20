@@ -1,8 +1,9 @@
 #pragma once
-
 #include <unordered_map>
 #include <string>
 #include <memory>
+
+static SoundBank instance;
 
 struct SoundInfo {
     unsigned int Handle;
@@ -13,7 +14,6 @@ struct SoundInfo {
 class SoundBank {
 public:
     static SoundBank& Instance() {
-        static SoundBank instance;
         return instance;
     }
     SoundInfo* GetSound(unsigned int handle) const {
