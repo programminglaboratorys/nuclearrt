@@ -852,7 +852,7 @@ CollisionInstanceBounds Frame::GetInstanceBounds(ObjectInstance* instance) {
 		bounds.scaleX = 1.0f;
 		bounds.scaleY = 1.0f;
 
-		unsigned int imageId = 0;
+		unsigned int imageId = CollisionInstanceBounds::NO_IMAGE;
 		int drawX = instance->GetX().GetIntValue();
 		int drawY = instance->GetY().GetIntValue();
 		int hotspotX = 0, hotspotY = 0;
@@ -938,6 +938,9 @@ CollisionInstanceBounds Frame::GetInstanceBounds(ObjectInstance* instance) {
 			y3 = bounds.centerY + (int)(dx3 * sinA + dy3 * cosA);
 			x4 = bounds.centerX + (int)(dx4 * cosA - dy4 * sinA);
 			y4 = bounds.centerY + (int)(dx4 * sinA + dy4 * cosA);
+
+			bounds.cosInv = cosA;	
+			bounds.sinInv = -sinA;
 		}
 
 		bounds.minX = std::min({x1, x2, x3, x4});
@@ -950,8 +953,8 @@ CollisionInstanceBounds Frame::GetInstanceBounds(ObjectInstance* instance) {
 	}
 
 	CollisionInstanceBounds result = instance->collisionBounds;
-	result.scrollX = 0;
-	result.scrollY = 0;
+	result.scrollX = 0; // doesn't seem to be used?
+	result.scrollY = 0; // doesn't seem to be used?
 	if (instance->Layer < Layers.size())
 	{
 		if (instance->Type == 0 || instance->Type == 1) // Quick backdrop or backdrop
@@ -972,12 +975,8 @@ bool Frame::IsPointInRotatedBox(int worldX, int worldY, const CollisionInstanceB
 	float dx = worldX - bounds.centerX + bounds.scrollX;
 	float dy = worldY - bounds.centerY + bounds.scrollY;
 	if (bounds.angle != 0) {
-		float rotationAngle = 360.0f - bounds.angle;
-		float radians = -rotationAngle * (PI / 180.0f);
-		float cosA = cos(radians);
-		float sinA = sin(radians);
-		float newX = dx * cosA - dy * sinA;
-		float newY = dx * sinA + dy * cosA;
+		float newX = dx * bounds.cosInv - dy * bounds.sinInv;
+		float newY = dx * bounds.sinInv + dy * bounds.cosInv;
 		dx = newX;
 		dy = newY;
 	}
@@ -1015,42 +1014,25 @@ bool Frame::IsColliding(ObjectInstance *instance1, ObjectInstance *instance2)
 		bounds1.maxY - bounds1.scrollY < bounds2.minY - bounds2.scrollY || bounds1.minY - bounds1.scrollY > bounds2.maxY - bounds2.scrollY)
 		return false;
 
-	unsigned int imageId1 = 0, imageId2 = 0;
-	
-	if (instance1->Type == 0) {
-		imageId1 = ((QuickBackdrop*)instance1)->shape.Image;
-	} else if (instance1->Type == 1) {
-		imageId1 = ((Backdrop*)instance1)->Image;
-	} else if (instance1->Type == 3 || instance1->Type == 5 || instance1->Type == 6 || instance1->Type == 7) {
-		imageId1 = -1;
-	} else {
-		imageId1 = ((Active*)instance1)->animations.GetCurrentImageHandle();
-	}
-
-	if (instance2->Type == 0) {
-		imageId2 = ((QuickBackdrop*)instance2)->shape.Image;
-	} else if (instance2->Type == 1) {
-		imageId2 = ((Backdrop*)instance2)->Image;
-	} else if (instance2->Type == 3 || instance2->Type == 5 || instance2->Type == 6 || instance2->Type == 7) {
-		imageId2 = -1;
-	} else {
-		imageId2 = ((Active*)instance2)->animations.GetCurrentImageHandle();
-	}
-	
 	Backend* backend = Application::Instance().GetBackend().get();
-	const std::vector<uint8_t> *maskData1 = (unsigned int)imageId1 != -1 ? backend->platform->GetCollisionMaskData(imageId1) : nullptr;
-	const std::vector<uint8_t> *maskData2 = (unsigned int)imageId2 != -1 ? backend->platform->GetCollisionMaskData(imageId2) : nullptr;
+
+	unsigned int imageId1 = bounds1.imageId, imageId2 = bounds2.imageId;
+
+	bool hasImage1 = imageId1 != CollisionInstanceBounds::NO_IMAGE;
+	bool hasImage2 = imageId2 != CollisionInstanceBounds::NO_IMAGE;
+
+	const std::vector<uint8_t> *maskData1 = hasImage1 ? backend->platform->GetCollisionMaskData(imageId1) : nullptr;
+	const std::vector<uint8_t> *maskData2 = hasImage2 ? backend->platform->GetCollisionMaskData(imageId2) : nullptr;
+	
 
 	bool useMask1 = maskData1 && !maskData1->empty() && (instance1->Type == 1 || (instance1->Type == 2 && ((Active*)instance1)->FineDetection));
 	bool useMask2 = maskData2 && !maskData2->empty() && (instance2->Type == 1 || (instance2->Type == 2 && ((Active*)instance2)->FineDetection));
 	
-	auto imageInfo1 = ImageBank::Instance().GetImage(imageId1);
-	auto imageInfo2 = ImageBank::Instance().GetImage(imageId2);
-	if (!imageInfo1 || !imageInfo2) {
-		int overlapMinX = std::max(bounds1.minX - bounds1.scrollX, bounds2.minX - bounds2.scrollX);
-		int overlapMinY = std::max(bounds1.minY - bounds1.scrollY, bounds2.minY - bounds2.scrollY);
-		int overlapMaxX = std::min(bounds1.maxX - bounds1.scrollX, bounds2.maxX - bounds2.scrollX);
-		int overlapMaxY = std::min(bounds1.maxY - bounds1.scrollY, bounds2.maxY - bounds2.scrollY);
+	int overlapMinX = std::max(bounds1.minX - bounds1.scrollX, bounds2.minX - bounds2.scrollX);
+	int overlapMinY = std::max(bounds1.minY - bounds1.scrollY, bounds2.minY - bounds2.scrollY);
+	int overlapMaxX = std::min(bounds1.maxX - bounds1.scrollX, bounds2.maxX - bounds2.scrollX);
+	int overlapMaxY = std::min(bounds1.maxY - bounds1.scrollY, bounds2.maxY - bounds2.scrollY);
+	if (!hasImage1 || !hasImage2) {
 		for (int py = overlapMinY; py <= overlapMaxY; py++)
 			for (int px = overlapMinX; px <= overlapMaxX; px++)
 				if (IsPointInRotatedBox(px, py, bounds1) && IsPointInRotatedBox(px, py, bounds2))
@@ -1062,35 +1044,12 @@ bool Frame::IsColliding(ObjectInstance *instance1, ObjectInstance *instance2)
 	int height1 = bounds1.maskHeight;
 	int width2 = bounds2.maskWidth;
 	int height2 = bounds2.maskHeight;
-	if (instance1->Type == 0) {
-		width1 = ((QuickBackdrop*)instance1)->Width;
-		height1 = ((QuickBackdrop*)instance1)->Height;
-	}
-	if (instance2->Type == 0) {
-		width2 = ((QuickBackdrop*)instance2)->Width;
-		height2 = ((QuickBackdrop*)instance2)->Height;
-	}
-	
+
 	int hotspotX1 = bounds1.hotspotX, hotspotY1 = bounds1.hotspotY;
 	int hotspotX2 = bounds2.hotspotX, hotspotY2 = bounds2.hotspotY;
 	
-	float cos1 = 1.0f, sin1 = 0.0f;
-	float cos2 = 1.0f, sin2 = 0.0f;
-	if (bounds1.angle != 0) {
-		float radians = -(360.0f - bounds1.angle) * (PI / 180.0f);
-		cos1 = cos(radians);
-		sin1 = sin(radians);
-	}
-	if (bounds2.angle != 0) {
-		float radians = -(360.0f - bounds2.angle) * (PI / 180.0f);
-		cos2 = cos(radians);
-		sin2 = sin(radians);
-	}
-	
-	int overlapMinX = std::max(bounds1.minX - bounds1.scrollX, bounds2.minX - bounds2.scrollX);
-	int overlapMinY = std::max(bounds1.minY - bounds1.scrollY, bounds2.minY - bounds2.scrollY);
-	int overlapMaxX = std::min(bounds1.maxX - bounds1.scrollX, bounds2.maxX - bounds2.scrollX);
-	int overlapMaxY = std::min(bounds1.maxY - bounds1.scrollY, bounds2.maxY - bounds2.scrollY);
+	const float cos1 = bounds1.cosInv, sin1 = bounds1.sinInv;
+	const float cos2 = bounds2.cosInv, sin2 = bounds2.sinInv;
 	
 	for (int py = overlapMinY; py <= overlapMaxY; py++) {
 		for (int px = overlapMinX; px <= overlapMaxX; px++) {
@@ -1133,48 +1092,26 @@ bool Frame::IsColliding(ObjectInstance *instance, int x, int y)
 	if (x < bounds.minX - bounds.scrollX || x > bounds.maxX - bounds.scrollX || y < bounds.minY - bounds.scrollY || y > bounds.maxY - bounds.scrollY)
 		return false;
 
-	unsigned int imageId = 0;
-	bool fineDetection = false;
-	
-	if (instance->Type == 0) {
-		imageId = ((QuickBackdrop*)instance)->shape.Image;
-	} else if (instance->Type == 1) {
-		imageId = ((Backdrop*)instance)->Image;
-		fineDetection = true;
-	}
-	if (instance->Type == 3 || instance->Type == 5 || instance->Type == 6 || instance->Type == 7) {
-		imageId = -1;
-		fineDetection = false;
-	}
-	else {
-		imageId = ((Active*)instance)->animations.GetCurrentImageHandle();
-		fineDetection = ((Active*)instance)->FineDetection;
-	}
-	if (!fineDetection)
+	unsigned int imageId = bounds.imageId;
+
+	bool fineDetection = instance->Type == 1 || (instance->Type == /*Active*/ 2 && ((Active*)instance)->FineDetection);
+
+	if (!fineDetection || imageId == CollisionInstanceBounds::NO_IMAGE)
 		return IsPointInRotatedBox(x, y, bounds);
 	
 	const std::vector<uint8_t>* maskData = Application::Instance().GetBackend().get()->platform->GetCollisionMaskData(imageId);
-	if (!maskData || maskData->empty())
+	if (!maskData || maskData->empty()) // if it doesn't have an image, it wouldn't not have a mask as well?
 		return IsPointInRotatedBox(x, y, bounds);
 
-	auto imageInfo = ImageBank::Instance().GetImage(imageId);
-	if (!imageInfo) return IsPointInRotatedBox(x, y, bounds);
 
 	int width = bounds.maskWidth;
 	int height = bounds.maskHeight;
-	if (instance->Type == 0) {
-		width = ((QuickBackdrop*)instance)->Width;
-		height = ((QuickBackdrop*)instance)->Height;
-	}
 
 	float dx = x - bounds.centerX + bounds.scrollX;
 	float dy = y - bounds.centerY + bounds.scrollY;
 	if (bounds.angle != 0) {
-		float radians = -(360.0f - bounds.angle) * (PI / 180.0f);
-		float cosA = cos(radians);
-		float sinA = sin(radians);
-		float newX = dx * cosA - dy * sinA;
-		float newY = dx * sinA + dy * cosA;
+		float newX = dx * bounds.cosInv - dy * bounds.sinInv;
+		float newY = dx * bounds.sinInv + dy * bounds.cosInv;
 		dx = newX;
 		dy = newY;
 	}
