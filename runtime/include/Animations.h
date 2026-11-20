@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <memory>
 #include <unordered_map>
+#include <unordered_map>
 
 #include "CValue.h"
 #include "Sequence.h"
@@ -19,7 +20,7 @@ public:
 	bool IsSequenceOver(int sequence) const;
 	bool IsFacingDirectionMask(int directionMask) const;
 	bool IsFacingDirection(int directionIndex) const;
-	std::vector<unsigned int> GetImagesUsed() const;
+	void GetImagesUsed(std::vector<unsigned int>& imagesUsed) const;
 	unsigned int GetCurrentImageHandle() const;
 	CValue GetCurrentSequenceIndex() const;
 	CValue GetCurrentDirection() const;

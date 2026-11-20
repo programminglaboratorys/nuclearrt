@@ -50,12 +50,12 @@ public:
 
 	unsigned int Font = 0;
 
-	std::vector<unsigned int> GetImagesUsed() override {
-		return Frames;
+	void GetImagesUsed(std::vector<unsigned int>& imagesUsed) override {
+		imagesUsed.insert(imagesUsed.end(), Frames.begin(), Frames.end());
 	}
 	
-	std::vector<unsigned int> GetFontsUsed() override {
-		return { Font };
+	void GetFontsUsed(std::vector<unsigned int>& fontsUsed) override {
+		fontsUsed.push_back(Font);
 	}
 
 	virtual CValue GetValue() const { return CValue(0); }

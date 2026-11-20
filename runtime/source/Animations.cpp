@@ -41,20 +41,16 @@ bool Animations::IsFacingDirectionMask(int directionMask) const
 	return (1 << (GetCurrentDirection().GetIntValue())) & directionMask;
 }
 
-std::vector<unsigned int> Animations::GetImagesUsed() const
+void Animations::GetImagesUsed(std::vector<unsigned int>& imagesUsed) const
 {
-	std::vector<unsigned int> imagesUsed;
 	for (const auto& sequencePair : *Sequences) {
 		const auto& sequence = sequencePair.second;
 		for (const auto& directionPair : sequence->Directions) {
 			for (const auto& frame : directionPair.second->Frames) {
-				if (std::find(imagesUsed.begin(), imagesUsed.end(), frame) == imagesUsed.end()) {
-					imagesUsed.push_back(frame);
-				}
+				imagesUsed.push_back(frame);
 			}
 		}
 	}
-	return imagesUsed;
 }
 
 unsigned int Animations::GetCurrentImageHandle() const {

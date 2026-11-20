@@ -150,13 +150,12 @@ public:
 			return Paragraphs[CurrentParagraph].VerticalAlignment;
 	}
 
-	std::vector<unsigned int> GetFontsUsed() override {
-		std::vector<unsigned int> fontsUsed;
+	void GetFontsUsed(std::vector<unsigned int>& fontsUsed) override {
 		for (auto& paragraph : Paragraphs)
 		{
 			fontsUsed.push_back(paragraph.Font);
 		}
-		return fontsUsed;
+		return;
 	}
 
 	ObjectGlobalDataString* CreateGlobalData() override {

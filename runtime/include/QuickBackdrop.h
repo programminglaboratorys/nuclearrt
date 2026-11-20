@@ -17,7 +17,7 @@ public:
     int Height;
 	Shape shape;
 
-	std::vector<unsigned int> GetImagesUsed() override {
-		return { shape.Image };
+	void GetImagesUsed(std::vector<unsigned int>& imagesUsed) override {
+		imagesUsed.push_back(shape.Image);
 	}
 };

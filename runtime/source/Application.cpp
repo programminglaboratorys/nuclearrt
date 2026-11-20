@@ -175,9 +175,15 @@ void Application::LoadFrame(int frameIndex)
 	std::vector<unsigned int> oldSoundsUsed;
 	if (currentFrame != nullptr)
 	{
-		oldImagesUsed = currentFrame->GetImagesUsed();
-		oldFontsUsed = currentFrame->GetFontsUsed();
+		currentFrame->GetImagesUsed(oldImagesUsed);
+		currentFrame->GetFontsUsed(oldFontsUsed);
 		oldSoundsUsed = currentFrame->GetSoundsUsed();
+
+		std::sort(oldImagesUsed.begin(), oldImagesUsed.end());
+		oldImagesUsed.erase(std::unique(oldImagesUsed.begin(), oldImagesUsed.end()), oldImagesUsed.end());
+
+		std::sort(oldFontsUsed.begin(), oldFontsUsed.end());
+		oldFontsUsed.erase(std::unique(oldFontsUsed.begin(), oldFontsUsed.end()), oldFontsUsed.end());
 
 		// merge current frame's global object data with existing data
 		std::vector<ObjectGlobalData*> frameData = currentFrame->GetGlobalObjectData();
@@ -199,10 +205,22 @@ void Application::LoadFrame(int frameIndex)
 	{
 		currentFrame->ApplyGlobalObjectData(globalObjectData);
 	}
-	
-	std::vector<unsigned int> newImagesUsed = currentFrame->GetImagesUsed();
-	std::vector<unsigned int> newFontsUsed = currentFrame->GetFontsUsed();
+	std::vector<unsigned int> newImagesUsed;
+	std::vector<unsigned int> newFontsUsed;
+	currentFrame->GetImagesUsed(newImagesUsed);
+	currentFrame->GetFontsUsed(newFontsUsed);
+
 	std::vector<unsigned int> newSoundsUsed = currentFrame->GetSoundsUsed();
+
+	currentFrame->GetImagesUsed(newImagesUsed);
+	currentFrame->GetFontsUsed(newFontsUsed);
+	oldSoundsUsed = currentFrame->GetSoundsUsed();
+
+	std::sort(newImagesUsed.begin(), newImagesUsed.end());
+	newImagesUsed.erase(std::unique(newImagesUsed.begin(), newImagesUsed.end()), newImagesUsed.end());
+
+	std::sort(newFontsUsed.begin(), newFontsUsed.end());
+	newFontsUsed.erase(std::unique(newFontsUsed.begin(), newFontsUsed.end()), newFontsUsed.end());
 
 	std::vector<unsigned int> imagesToUnload;
 	std::vector<unsigned int> fontsToUnload;

@@ -13,7 +13,7 @@ public:
 	unsigned int CollisionType;
 	unsigned int Image;	
 
-	std::vector<unsigned int> GetImagesUsed() override {
-		return { Image };
+	void GetImagesUsed(std::vector<unsigned int>& imagesUsed) override {
+		imagesUsed.push_back(Image);
 	}
 };
