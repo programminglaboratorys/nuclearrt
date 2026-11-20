@@ -26,15 +26,36 @@ endif()
 
 include(cmake/platform_setup.cmake)
 
+set(SHARED_DEPS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../_nuclearrt_deps")
+
 include(FetchContent)
 function(include_dependency libName gitURL gitTag)
-    # setup the declare
-    FetchContent_Declare(${libName}
-            GIT_REPOSITORY ${gitURL}
-            GIT_TAG        ${gitTag}
-            GIT_SHALLOW    FALSE
-            GIT_PROGRESS   TRUE
-    )
+    string(TOLOWER "${libName}" _lib)
+    string(TOUPPER "${libName}" _LIB)
+    set(_src "${SHARED_DEPS_DIR}/${_lib}-src")
+
+    if(NOT IS_DIRECTORY "${SHARED_DEPS_DIR}")
+        FetchContent_Declare(${libName}
+                GIT_REPOSITORY ${gitURL}
+                GIT_TAG        ${gitTag}
+                GIT_SHALLOW    FALSE
+                GIT_PROGRESS   TRUE
+        )
+    elseif(EXISTS "${_src}/.git")
+        set(FETCHCONTENT_SOURCE_DIR_${_LIB} "${_src}")
+        FetchContent_Declare(${libName}
+                GIT_REPOSITORY ${gitURL}
+                GIT_TAG        ${gitTag}
+        )
+    else()
+        FetchContent_Declare(${libName}
+                GIT_REPOSITORY ${gitURL}
+                GIT_TAG        ${gitTag}
+                GIT_SHALLOW    FALSE
+                GIT_PROGRESS   TRUE
+                SOURCE_DIR     "${_src}"
+        )
+    endif()
 
     FetchContent_MakeAvailable(${libName})
 endfunction()
