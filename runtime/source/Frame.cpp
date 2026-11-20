@@ -267,7 +267,7 @@ void Frame::UpdateScrolling(int newX, int newY)
 		int nX = (instance->GetX().GetIntValue() + oldLayerDx) - newLayerDx + deltaX;
 		int nY = (instance->GetY().GetIntValue() + oldLayerDy) - newLayerDy + deltaY;
 
-		instance->SetPosition(CValue(nX), CValue(nY));
+			instance->SetPosition(CValue(nX), CValue(nY));
 	}
 }
 
@@ -497,7 +497,7 @@ void Frame::DrawCounterNumbers(CounterBase *counter, int value, int x, int y)
 		{
 			valueString = valueString.substr(valueString.size() - counter->IntDigitCount);
 		}
-	}		
+		}
 
 	if (negative)
 	{
@@ -556,46 +556,20 @@ void Frame::DrawCounterNumbers(CounterBase *counter, int value, int x, int y)
 	}
 }
 
-std::vector<unsigned int> Frame::GetImagesUsed()
-{
-	std::vector<unsigned int> imagesUsed;
-	
+void Frame::GetImagesUsed(std::vector<unsigned int>& imagesUsed)
+{	
 	for (auto& [handle, instance] : ObjectInstances)
 	{
-		std::vector<unsigned int> instanceImages = instance->GetImagesUsed();
-		for (unsigned int image : instanceImages)
-		{
-			if (std::find(imagesUsed.begin(), imagesUsed.end(), image) == imagesUsed.end())
-			{
-				imagesUsed.push_back(image);
-			}
-		}
+		instance->GetImagesUsed(imagesUsed);
 	}
-
-	return imagesUsed;
 }
 
-std::vector<unsigned int> Frame::GetFontsUsed()
+void Frame::GetFontsUsed(std::vector<unsigned int>& fontsUsed)
 {
-	std::vector<unsigned int> fontsUsed;
-
 	for (auto& [handle, instance] : ObjectInstances)
 	{
-		std::vector<unsigned int> instanceFonts = instance->GetFontsUsed();
-		for (unsigned int font : instanceFonts)
-		{
-			if (std::find(fontsUsed.begin(), fontsUsed.end(), font) == fontsUsed.end())
-			{
-				fontsUsed.push_back(font);
-			}
-		}
+		instance->GetFontsUsed(fontsUsed);
 	}
-
-	//erase any duplicates
-	std::sort(fontsUsed.begin(), fontsUsed.end());
-	fontsUsed.erase(std::unique(fontsUsed.begin(), fontsUsed.end()), fontsUsed.end());
-
-	return fontsUsed;
 }
 
 ObjectInstance* Frame::CreateInstance(ObjectInstance* createdInstance, short x, short y, unsigned int layer, short instanceValue, unsigned int objectInfoHandle, short angle, bool postInitialize, ObjectInstance* parentInstance)
@@ -612,7 +586,8 @@ ObjectInstance* Frame::CreateInstance(ObjectInstance* createdInstance, short x, 
 	// Load any textures needed for this instance
 	if (postInitialize) // objs created on init have textures loaded in application
 	{
-		std::vector<unsigned int> texturesToLoad = createdInstance->GetImagesUsed();
+		std::vector<unsigned int> texturesToLoad;
+		createdInstance->GetImagesUsed(texturesToLoad);
 		auto backend = Application::Instance().GetBackend();
 		for (unsigned int textureId : texturesToLoad) {
 			backend->graphics->LoadTexture(textureId);
@@ -838,7 +813,7 @@ bool Frame::IsCollidingWithBackground(ObjectInstance *instance)
 			// Check if this backdrop is an obstacle
 			if (quickBackdrop->ObstacleType > 0) {
 				if (IsColliding(instance, quickBackdrop)) return true;
-			}
+		}
 		}
 	}
 	

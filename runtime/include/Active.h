@@ -27,8 +27,8 @@ public:
 	bool AutomaticRotation = false;
 	bool FineDetection = false;
 
-	std::vector<unsigned int> GetImagesUsed() override {
-		return animations.GetImagesUsed();
+	void GetImagesUsed(std::vector<unsigned int>& imagesUsed) override {
+		return animations.GetImagesUsed(imagesUsed);
 	}
 
 	ObjectGlobalData* CreateGlobalData() override {

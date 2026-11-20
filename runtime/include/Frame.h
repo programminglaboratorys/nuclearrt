@@ -95,8 +95,8 @@ public:
 	void DrawLayer(Layer& layer);
 	void DrawCounterNumbers(CounterBase *counter, int value, int x, int y);
 
-	std::vector<unsigned int> GetImagesUsed();
-	std::vector<unsigned int> GetFontsUsed();
+	void GetImagesUsed(std::vector<unsigned int>& imagesUsed);
+	void GetFontsUsed(std::vector<unsigned int>& fontsUsed);
 	virtual std::vector<unsigned int> GetSoundsUsed() { return {}; }
 
 	ObjectInstance* CreateInstance(ObjectInstance* createdInstance, short x, short y, unsigned int layer, short instanceValue, unsigned int objectInfoHandle, short angle, bool postInitialize = false, ObjectInstance* parentInstance = nullptr);

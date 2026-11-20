@@ -107,8 +107,8 @@ public:
     virtual ObjectGlobalData* CreateGlobalData() { return nullptr; };
     virtual void ApplyGlobalData(ObjectGlobalData* globalData) { };
 
-    virtual std::vector<unsigned int> GetImagesUsed() { return std::vector<unsigned int>(); };
-    virtual std::vector<unsigned int> GetFontsUsed() { return std::vector<unsigned int>(); };
+    virtual void GetImagesUsed(std::vector<unsigned int>& imagesUsed) { return; };
+    virtual void GetFontsUsed(std::vector<unsigned int>& imagesUsed) { return; };
 
 	bool HasQualifier(short qualifier) const {
 		short groupIndex = qualifier & 0x7FFF;
