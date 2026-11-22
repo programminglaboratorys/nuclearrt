@@ -345,7 +345,7 @@ public class ExpressionConverter
 
 		// object expressions
 		// Extension
-		if (expression.ObjectType >= 32)
+		if (expression.ObjectType >= 32 && expression.Num >= 80)
 		{
 			var exporter = ExtensionExporterRegistry.GetExporterByObjectInfo(expression.ObjectInfo, Exporter.Instance.CurrentFrame);
 			expression.Num -= 80;
@@ -361,6 +361,31 @@ public class ExpressionConverter
 			return stringBuilder.Append(exporter.ExportExpression(expression, eventBase));
 		}
 
+		// Movement objects (Active, Score, Lives, Counter)
+		if (expression.ObjectType == (int)ObjectType.Active ||
+			expression.ObjectType == (int)ObjectType.Score ||
+			expression.ObjectType == (int)ObjectType.Lives ||
+			expression.ObjectType == (int)ObjectType.Counter)
+		{
+			switch (expression.Num)
+			{
+				case 3: // Speed (real movement speed)
+					{
+						if (UseInstance(expression, eventBase))
+							return stringBuilder.Append($"(({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)instance)->movements.GetCurrentMovement()->GetRealSpeed()");
+						else
+							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)*({objectSelector}.begin()))->movements.GetCurrentMovement()->GetRealSpeed() : 0)");
+					}
+				case 18: // NMovement
+					{
+						if (UseInstance(expression, eventBase))
+							return stringBuilder.Append($"(({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)instance)->movements.currentMovementIndex");
+						else
+							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)*({objectSelector}.begin()))->movements.currentMovementIndex : 0)");
+					}
+			}
+		}
+
 		// Active/Backdrop specific
 		if (expression.ObjectType == (int)ObjectType.Active)
 		{
@@ -372,13 +397,6 @@ public class ExpressionConverter
 							return stringBuilder.Append("((Active*)instance)->animations.GetCurrentFrameIndex()");
 						else
 							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? ((Active*)*({objectSelector}.begin()))->animations.GetCurrentFrameIndex() : 0)");
-					}
-				case 3: // Speed (real movement speed)
-					{
-						if (UseInstance(expression, eventBase))
-							return stringBuilder.Append($"(({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)instance)->movements.GetCurrentMovement()->GetRealSpeed()");
-						else
-							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)*({objectSelector}.begin()))->movements.GetCurrentMovement()->GetRealSpeed() : 0)");
 					}
 				case 6: // Dir (animation direction)
 					{
@@ -393,13 +411,6 @@ public class ExpressionConverter
 							return stringBuilder.Append("((Active*)instance)->animations.GetCurrentSequenceIndex()");
 						else
 							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? ((Active*)*({objectSelector}.begin()))->animations.GetCurrentSequenceIndex() : 0)");
-					}
-				case 18: // NMovement
-					{
-						if (UseInstance(expression, eventBase))
-							return stringBuilder.Append("((Active*)instance)->movements.currentMovementIndex");
-						else
-							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? ((Active*)*({objectSelector}.begin()))->movements.currentMovementIndex : 0)");
 					}
 				case 25: // XActionPoint
 					{

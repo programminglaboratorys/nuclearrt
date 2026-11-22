@@ -6,7 +6,7 @@ using CTFAK.Utils;
 
 public class DestroyAction : ActionBase
 {
-	public override int[] ObjectType { get; set; } = [2, 3, 7];
+	public override int[] ObjectType { get; set; } = AllRuntimeObjects;
 	public override int Num { get; set; } = 24;
 
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
