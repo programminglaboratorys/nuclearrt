@@ -50,6 +50,8 @@ public class EventProcessor
 			string eventName = GetEventName(evt);
 
 			// TODO: if a group is empty, don't include it.
+			if (IsChildEvent(j)) continue;
+
 			if (ShouldSkipEvent(evt))
 			{
 				if (new GroupStartCondition().Equals(evt.Conditions[0])) //if this event is a group start, don't include it in the main event update loop
@@ -63,8 +65,6 @@ public class EventProcessor
 
 				continue;
 			}
-
-			if (IsChildEvent(j)) continue;
 
 			//only add event to normal event loop if it doesn't have a loop condition
 			if (DoesEventHaveLoop(evt) == null && DoesEventHaveNamedTimerEvent(evt) == null && !IsTrueEvent(evt, frameIndex))
@@ -562,6 +562,8 @@ public class EventProcessor
 
 		for (int j = 0; j < items.Count; j++)
 		{
+			if (IsChildEvent(j)) continue;
+
 			var evt = items[j];
 			if (new GroupStartCondition().Equals(evt.Conditions[0]))
 			{
@@ -574,7 +576,7 @@ public class EventProcessor
 				continue;
 			}
 
-			if (IsChildEvent(j) || !IsTrueEvent(evt, frameIndex)) continue;
+			if (!IsTrueEvent(evt, frameIndex)) continue;
 
 			var first = evt.Conditions[0];
 			result.Append($"\tif (objectType == {first.ObjectType} && conditionNum == {first.Num}");
@@ -715,9 +717,19 @@ public class EventProcessor
 		for (int i = 0; i < items.Count; i++)
 		{
 			if (_parentOf.TryGetValue(i, out int parentIndex))
-				_oisInheritedFromParent[i] = _oisPassedToChildren[parentIndex];
+			{
+				var inherited = new List<Tuple<int, int, string>>(_oisInheritedFromParent.GetValueOrDefault(parentIndex) ?? []);
+				foreach (var oi in _oisPassedToChildren.GetValueOrDefault(parentIndex) ?? [])
+				{
+					if (!inherited.Any(x => x.Item1 == oi.Item1 && x.Item2 == oi.Item2))
+						inherited.Add(oi);
+				}
+				_oisInheritedFromParent[i] = inherited;
+			}
 			else
+			{
 				_oisInheritedFromParent[i] = [];
+			}
 		}
 	}
 
@@ -725,7 +737,12 @@ public class EventProcessor
 	{
 		var result = new StringBuilder();
 		var items = _exporter.GameData.Frames[frameIndex].events.Items;
-		var passedSelectors = _oisPassedToChildren.GetValueOrDefault(parentIndex) ?? [];
+		var passedSelectors = new List<Tuple<int, int, string>>(_oisInheritedFromParent.GetValueOrDefault(parentIndex) ?? []);
+		foreach (var oi in _oisPassedToChildren.GetValueOrDefault(parentIndex) ?? [])
+		{
+			if (!passedSelectors.Any(x => x.Item1 == oi.Item1 && x.Item2 == oi.Item2))
+				passedSelectors.Add(oi);
+		}
 
 		foreach (var selector in passedSelectors)
 		{
@@ -734,11 +751,23 @@ public class EventProcessor
 
 		foreach (int childIndex in childIndices)
 		{
+			var childEvt = items[childIndex];
+			if (childEvt.Conditions.Count > 0 && new GroupStartCondition().Equals(childEvt.Conditions[0]))
+			{
+				result.AppendLine($"if (IsGroupActive({(childEvt.Conditions[0].Items[0].Loader as Group).Id})) {{");
+				continue;
+			}
+			if (childEvt.Conditions.Count > 0 && new GroupEndCondition().Equals(childEvt.Conditions[0]))
+			{
+				result.AppendLine("}");
+				continue;
+			}
+
 			foreach (var selector in passedSelectors)
 			{
 				result.AppendLine($"{StringUtils.SanitizeObjectName(selector.Item3)}_{selector.Item1}_selector.RestoreSelection(__child_{StringUtils.SanitizeObjectName(selector.Item3)}_{selector.Item1});");
 			}
-			result.AppendLine($"{GetEventName(items[childIndex])}();");
+			result.AppendLine($"{GetEventName(childEvt)}();");
 		}
 
 		return result.ToString();
@@ -747,16 +776,41 @@ public class EventProcessor
 	List<int> ComputeDirectChildIndices(int parentIndex, List<EventGroup> items)
 	{
 		int parentDepth = items[parentIndex].RestrictCpt;
+		int groupOffset = 0;
 		var children = new List<int>();
 
 		for (int i = parentIndex + 1; i < items.Count; i++)
 		{
-			int depth = items[i].RestrictCpt;
-			if (depth <= parentDepth) break;
+			var evt = items[i];
+			int depth = evt.RestrictCpt;
+			int expectedChildDepth = parentDepth + 1 + groupOffset;
 
-			if (depth == parentDepth + 1 && !ShouldSkipEvent(items[i]) && (items[i].Flags & 0x8000) != 0)
+			if (evt.Conditions.Count > 0 && new GroupEndCondition().Equals(evt.Conditions[0]))
 			{
-				children.Add(i);
+				if (groupOffset > 0 && depth == expectedChildDepth)
+				{
+					children.Add(i);
+					groupOffset--;
+					continue;
+				}
+				if (depth <= parentDepth + groupOffset) break;
+			}
+
+			if (depth < expectedChildDepth) break;
+
+			if (depth == expectedChildDepth && (evt.Flags & 0x8000) != 0)
+			{
+				if (evt.Conditions.Count > 0 && new GroupStartCondition().Equals(evt.Conditions[0]))
+				{
+					children.Add(i);
+					groupOffset++;
+					continue;
+				}
+
+				if (!ShouldSkipEvent(evt))
+				{
+					children.Add(i);
+				}
 			}
 		}
 
