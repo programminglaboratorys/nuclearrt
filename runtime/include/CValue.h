@@ -787,3 +787,36 @@ private:
         new (&data.s) std::string(std::move(value));
     }
 };
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline CValue operator+(T lhs, const CValue& rhs) { return CValue(lhs) + rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline CValue operator-(T lhs, const CValue& rhs) { return CValue(lhs) - rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline CValue operator*(T lhs, const CValue& rhs) { return CValue(lhs) * rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline CValue operator/(T lhs, const CValue& rhs) { return CValue(lhs) / rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline CValue operator%(T lhs, const CValue& rhs) { return CValue(lhs) % rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline bool operator==(T lhs, const CValue& rhs) { return CValue(lhs) == rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline bool operator!=(T lhs, const CValue& rhs) { return CValue(lhs) != rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline bool operator<(T lhs, const CValue& rhs) { return CValue(lhs) < rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline bool operator<=(T lhs, const CValue& rhs) { return CValue(lhs) <= rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline bool operator>(T lhs, const CValue& rhs) { return CValue(lhs) > rhs; }
+
+template<typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+inline bool operator>=(T lhs, const CValue& rhs) { return CValue(lhs) >= rhs; }

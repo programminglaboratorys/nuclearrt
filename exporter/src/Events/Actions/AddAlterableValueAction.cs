@@ -11,9 +11,13 @@ public class AddAlterableValueAction : ActionBase
 	{
 		StringBuilder result = new();
 
+		string indexExpr = eventBase.Items[0].Loader is ExpressionParameter exprParam
+			? $"({ExpressionConverter.ConvertExpression(exprParam, eventBase)}).GetIntValue()"
+			: ((Short)eventBase.Items[0].Loader).Value.ToString();
+
 		result.AppendLine($"for (ObjectIterator it({GetSelector(eventBase.ObjectInfo, eventBase.ObjectType)}); !it.end(); ++it) {{");
 		result.AppendLine($"    auto instance = *it;");
-		result.AppendLine($"    (({ExpressionConverter.GetObjectClassName(eventBase.ObjectInfo, eventBase.ObjectType)}*)instance)->Values.AddValue({((Short)eventBase.Items[0].Loader).Value}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)});");
+		result.AppendLine($"    (({ExpressionConverter.GetObjectClassName(eventBase.ObjectInfo, eventBase.ObjectType)}*)instance)->Values.AddValue({indexExpr}, {ExpressionConverter.ConvertExpression((ExpressionParameter)eventBase.Items[1].Loader, eventBase)});");
 		result.AppendLine("}");
 
 		return result.ToString();

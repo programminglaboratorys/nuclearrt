@@ -210,7 +210,21 @@ public class ExpressionConverter
 			&& expression.ObjectInfoList == eventBase.ObjectInfoList;
 	}
 
-	private static StringBuilder HandleRuntimeObjectExpr(StringBuilder stringBuilder, Expression expression, EventBase eventBase = null)
+	private static bool HasArgumentsFollowing(ExpressionParameter expressions, int index)
+	{
+		if (expressions == null || index + 1 >= expressions.Items.Count)
+			return false;
+
+		Expression next = expressions.Items[index + 1];
+		if (next.ObjectType == (int)ObjectType.Arithmetic)
+			return false;
+		if (next.ObjectType == (int)ObjectType.System && (next.Num == -2 || next.Num == -3))
+			return false;
+
+		return true;
+	}
+
+	private static StringBuilder HandleRuntimeObjectExpr(StringBuilder stringBuilder, Expression expression, EventBase eventBase = null, bool hasArguments = false)
 	{
 		var objectSelector = GetSelector(expression.ObjectInfo, expression.ObjectType);
 		// common expressions
@@ -228,7 +242,12 @@ public class ExpressionConverter
 			case 45: // NSelectedObjects (number of selected objects)
 				return stringBuilder.Append($"CValue({objectSelector}.Count())");
 			case 46: // InstanceValue
-				return stringBuilder.Append("CValue(instance->InstanceValue)");
+				{
+					if (UseInstance(expression, eventBase))
+						return stringBuilder.Append("CValue(instance->InstanceValue)");
+					else
+						return stringBuilder.Append($"({objectSelector}.Count() > 0 ? CValue((*{objectSelector}.begin())->InstanceValue) : CValue(0))");
+				}
 			case 23: // Layer
 				{
 					if (UseInstance(expression, eventBase))
@@ -345,7 +364,7 @@ public class ExpressionConverter
 
 		// object expressions
 		// Extension
-		if (expression.ObjectType >= 32)
+		if (expression.ObjectType >= 32 && expression.Num >= 80)
 		{
 			var exporter = ExtensionExporterRegistry.GetExporterByObjectInfo(expression.ObjectInfo, Exporter.Instance.CurrentFrame);
 			expression.Num -= 80;
@@ -354,11 +373,36 @@ public class ExpressionConverter
 			{
 				ObjectCommon? common = Exporter.Instance.GameData.frameitems.GetValueOrDefault(GetObject(expression.ObjectInfo, Exporter.Instance.CurrentFrame).Item1)?.properties as ObjectCommon;
 				Logger.Log($"Extension exporter not found for ObjectInfo {expression.ObjectInfo} ({common?.Identifier ?? ""})");
-				stringBuilder.Append($"Extension exporter not found for ObjectInfo {expression.ObjectInfo} ({common?.Identifier ?? ""}). ({expression.ObjectType}, {expression.Num})");
-				HandleUnimplemented(stringBuilder, expression, eventBase);
+				string comment = $"/* Extension exporter not found for ObjectInfo {expression.ObjectInfo} ({common?.Identifier ?? ""}). ({expression.ObjectType}, {expression.Num}) */";
+				stringBuilder.Append(hasArguments ? $"MathHelper::UnsupportedExpr({comment} " : $"CValue(0) {comment}");
 				return stringBuilder;
 			}
 			return stringBuilder.Append(exporter.ExportExpression(expression, eventBase));
+		}
+
+		// Movement objects (Active, Score, Lives, Counter)
+		if (expression.ObjectType == (int)ObjectType.Active ||
+			expression.ObjectType == (int)ObjectType.Score ||
+			expression.ObjectType == (int)ObjectType.Lives ||
+			expression.ObjectType == (int)ObjectType.Counter)
+		{
+			switch (expression.Num)
+			{
+				case 3: // Speed (real movement speed)
+					{
+						if (UseInstance(expression, eventBase))
+							return stringBuilder.Append($"(({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)instance)->movements.GetCurrentMovement()->GetRealSpeed()");
+						else
+							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)*({objectSelector}.begin()))->movements.GetCurrentMovement()->GetRealSpeed() : 0)");
+					}
+				case 18: // NMovement
+					{
+						if (UseInstance(expression, eventBase))
+							return stringBuilder.Append($"(({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)instance)->movements.currentMovementIndex");
+						else
+							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)*({objectSelector}.begin()))->movements.currentMovementIndex : 0)");
+					}
+			}
 		}
 
 		// Active/Backdrop specific
@@ -373,13 +417,6 @@ public class ExpressionConverter
 						else
 							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? ((Active*)*({objectSelector}.begin()))->animations.GetCurrentFrameIndex() : 0)");
 					}
-				case 3: // Speed (real movement speed)
-					{
-						if (UseInstance(expression, eventBase))
-							return stringBuilder.Append($"(({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)instance)->movements.GetCurrentMovement()->GetRealSpeed()");
-						else
-							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? (({GetObjectClassName(expression.ObjectInfo, expression.ObjectType)}*)*({objectSelector}.begin()))->movements.GetCurrentMovement()->GetRealSpeed() : 0)");
-					}
 				case 6: // Dir (animation direction)
 					{
 						if (UseInstance(expression, eventBase))
@@ -393,13 +430,6 @@ public class ExpressionConverter
 							return stringBuilder.Append("((Active*)instance)->animations.GetCurrentSequenceIndex()");
 						else
 							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? ((Active*)*({objectSelector}.begin()))->animations.GetCurrentSequenceIndex() : 0)");
-					}
-				case 18: // NMovement
-					{
-						if (UseInstance(expression, eventBase))
-							return stringBuilder.Append("((Active*)instance)->movements.currentMovementIndex");
-						else
-							return stringBuilder.Append($"({objectSelector}.Count() > 0 ? ((Active*)*({objectSelector}.begin()))->movements.currentMovementIndex : 0)");
 					}
 				case 25: // XActionPoint
 					{
@@ -521,15 +551,15 @@ public class ExpressionConverter
 		}
 
 		// if none of switch cases return than defaults to unimplemented
-		HandleUnimplemented(stringBuilder, expression, eventBase);
+		HandleUnimplemented(stringBuilder, expression, eventBase, hasArguments);
 		return stringBuilder;
 	}
 
 
-	private static void HandleUnimplemented(StringBuilder result, Expression expression, EventBase eventBase = null)
+	private static void HandleUnimplemented(StringBuilder result, Expression expression, EventBase eventBase = null, bool hasArguments = false)
 	{
-
-		result.Append($"/* Expression not found: ({expression.ObjectType}, {expression.Num}) */");
+		string comment = $"/* Expression not found: ({expression.ObjectType}, {expression.Num}) */";
+		result.Append(hasArguments ? $"MathHelper::UnsupportedExpr({comment} " : $"CValue(0) {comment}");
 		Logger.Log($"No expresion match, ObjectType: {expression.ObjectType}, Num: {expression.Num}");
 	}
 
@@ -546,6 +576,8 @@ public class ExpressionConverter
 				continue;
 			}
 
+			bool hasArguments = HasArgumentsFollowing(expressions, i);
+
 			switch ((ObjectType)expression.ObjectType)
 			{
 				case ObjectType.System:
@@ -555,11 +587,11 @@ public class ExpressionConverter
 					if (expression.ObjectType > 0)
 					{
 						// Runtime Objects (Active, Text, Counter, etc.)
-						HandleRuntimeObjectExpr(result, expression, eventBase);
+						HandleRuntimeObjectExpr(result, expression, eventBase, hasArguments);
 					}
 					else
 					{
-						HandleUnimplemented(result, expression, eventBase);
+						HandleUnimplemented(result, expression, eventBase, hasArguments);
 					}
 					break;
 			}

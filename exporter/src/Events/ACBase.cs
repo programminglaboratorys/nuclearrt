@@ -3,6 +3,10 @@ using CTFAK.MMFParser.EXE.Loaders.Events.Parameters;
 
 public class ACBase
 {
+	public static readonly int[] AllRuntimeObjects = [2, 3, 5, 6, 7, 32];
+	public static readonly int[] AlterableObjects = [2, 3, 7];
+	public static readonly int[] MovementObjects = [2, 5, 6, 7];
+
 	public virtual int[] ObjectType { get; set; } = [];
 	public virtual int Num { get; set; }
 

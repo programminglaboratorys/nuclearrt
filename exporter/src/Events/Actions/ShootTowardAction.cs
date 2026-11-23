@@ -33,8 +33,8 @@ public class ShootTowardAction : ActionBase
 			}
 			else // shoot toward x/y
 			{
-				result.AppendLine($"    targetX += ((Active*)*targetInstance)->GetX().GetIntValue();");
-				result.AppendLine($"    targetY += ((Active*)*targetInstance)->GetY().GetIntValue();");
+				result.AppendLine($"    targetX += (*targetInstance)->GetX().GetIntValue();");
+				result.AppendLine($"    targetY += (*targetInstance)->GetY().GetIntValue();");
 			}
 
 		}

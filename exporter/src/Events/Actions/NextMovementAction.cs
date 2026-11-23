@@ -6,7 +6,7 @@ using CTFAK.Utils;
 
 public class NextMovementAction : ActionBase
 {
-	public override int[] ObjectType { get; set; } = [2, 7];
+	public override int[] ObjectType { get; set; } = MovementObjects;
 	public override int Num { get; set; } = 11;
 
 	public override string Build(EventBase eventBase, ref string nextLabel, ref int orIndex, Dictionary<string, object>? parameters = null, string ifStatement = "if (")
