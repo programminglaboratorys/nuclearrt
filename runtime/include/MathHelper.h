@@ -84,6 +84,14 @@ namespace MathHelper {
     inline double ATan2(double y, double x) { return ToDegrees(std::atan2(y, x)); }
     
     inline CValue Sin(const CValue& v) { return CValue(Sin(v.GetDoubleValue())); }
+    inline CValue Cos(const CValue& v) { return CValue(Cos(v.GetDoubleValue())); }
+    inline CValue Tan(const CValue& v) { return CValue(Tan(v.GetDoubleValue())); }
+    inline CValue ASin(const CValue& v) { return CValue(ASin(v.GetDoubleValue())); }
+    inline CValue ACos(const CValue& v) { return CValue(ACos(v.GetDoubleValue())); }
+    inline CValue ATan(const CValue& v) { return CValue(ATan(v.GetDoubleValue())); }
+    inline CValue ATan2(const CValue& y, const CValue& x) { return CValue(ATan2(y.GetDoubleValue(), x.GetDoubleValue())); }
+    template<typename... Args>
+    inline CValue UnsupportedExpr(Args&&...) { return CValue(0); }
     inline CValue Sqrt(const CValue& v) { return CValue(std::sqrt(v.GetDoubleValue())); }
     inline CValue Abs(const CValue& v) { return CValue(std::abs(v.GetDoubleValue())); }
     inline CValue Round(const CValue& v) { return CValue(std::round(v.GetDoubleValue())); }
