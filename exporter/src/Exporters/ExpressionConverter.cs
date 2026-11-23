@@ -228,7 +228,12 @@ public class ExpressionConverter
 			case 45: // NSelectedObjects (number of selected objects)
 				return stringBuilder.Append($"CValue({objectSelector}.Count())");
 			case 46: // InstanceValue
-				return stringBuilder.Append("CValue(instance->InstanceValue)");
+				{
+					if (UseInstance(expression, eventBase))
+						return stringBuilder.Append("CValue(instance->InstanceValue)");
+					else
+						return stringBuilder.Append($"({objectSelector}.Count() > 0 ? CValue((*{objectSelector}.begin())->InstanceValue) : CValue(0))");
+				}
 			case 23: // Layer
 				{
 					if (UseInstance(expression, eventBase))
@@ -354,8 +359,7 @@ public class ExpressionConverter
 			{
 				ObjectCommon? common = Exporter.Instance.GameData.frameitems.GetValueOrDefault(GetObject(expression.ObjectInfo, Exporter.Instance.CurrentFrame).Item1)?.properties as ObjectCommon;
 				Logger.Log($"Extension exporter not found for ObjectInfo {expression.ObjectInfo} ({common?.Identifier ?? ""})");
-				stringBuilder.Append($"Extension exporter not found for ObjectInfo {expression.ObjectInfo} ({common?.Identifier ?? ""}). ({expression.ObjectType}, {expression.Num})");
-				HandleUnimplemented(stringBuilder, expression, eventBase);
+				stringBuilder.Append($"CValue(0) /* Extension exporter not found for ObjectInfo {expression.ObjectInfo} ({common?.Identifier ?? ""}). ({expression.ObjectType}, {expression.Num}) */");
 				return stringBuilder;
 			}
 			return stringBuilder.Append(exporter.ExportExpression(expression, eventBase));
@@ -540,7 +544,7 @@ public class ExpressionConverter
 	private static void HandleUnimplemented(StringBuilder result, Expression expression, EventBase eventBase = null)
 	{
 
-		result.Append($"/* Expression not found: ({expression.ObjectType}, {expression.Num}) */");
+		result.Append($"CValue(0) /* Expression not found: ({expression.ObjectType}, {expression.Num}) */");
 		Logger.Log($"No expresion match, ObjectType: {expression.ObjectType}, Num: {expression.Num}");
 	}
 
