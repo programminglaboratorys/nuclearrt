@@ -5,9 +5,13 @@
 class EffectBank {
 public:
     static EffectBank& Instance() {
-        static EffectBank instance;
         return instance;
     }
 
     {{ EFFECT_DEFINITIONS }}
-}; 
+
+private:
+    static EffectBank instance;
+};
+
+inline EffectBank EffectBank::instance;

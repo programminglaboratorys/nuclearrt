@@ -13,7 +13,6 @@ struct SDL_Window;
 class DebugUI {
 public:
 	static DebugUI& Instance() {
-		static DebugUI instance;
 		return instance;
 	}
 
@@ -55,7 +54,11 @@ private:
 	};
 	
 	std::vector<DebugWindow> windows;
+
+	static DebugUI instance;
 };
+
+inline DebugUI DebugUI::instance;
 
 #define DEBUG_UI DebugUI::Instance()
 

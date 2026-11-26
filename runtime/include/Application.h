@@ -23,7 +23,6 @@ class Application
 public:
 	static Application& Instance()
 	{
-		static Application instance;
 		return instance;
 	}
 
@@ -77,4 +76,8 @@ private:
 
 	std::vector<ObjectGlobalData*> globalObjectData;
 	void MergeGlobalObjectData(std::vector<ObjectGlobalData*> frameData);
+
+	static Application instance;
 };
+
+inline Application Application::instance;

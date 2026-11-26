@@ -18,7 +18,6 @@ struct ImageInfo {
 class ImageBank {
 public:
     static ImageBank& Instance() {
-        static ImageBank instance;
         return instance;
     }
     
@@ -34,4 +33,8 @@ private:
     ImageBank();
     
     std::unordered_map<unsigned int, ImageInfo> Images;
+
+    static ImageBank instance;
 };
+
+inline ImageBank ImageBank::instance;

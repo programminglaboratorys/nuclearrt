@@ -13,7 +13,6 @@ struct SoundInfo {
 class SoundBank {
 public:
     static SoundBank& Instance() {
-        static SoundBank instance;
         return instance;
     }
     SoundInfo* GetSound(unsigned int handle) const {
@@ -35,4 +34,8 @@ private:
     SoundBank();
 
     std::unordered_map<unsigned int, SoundInfo*> Sounds;
+
+    static SoundBank instance;
 };
+
+inline SoundBank SoundBank::instance;
