@@ -27,7 +27,6 @@ struct FontInfo {
 class FontBank {
 public:
     static FontBank& Instance() {
-        static FontBank instance;
         return instance;
     }
     
@@ -43,4 +42,8 @@ private:
     FontBank();
     
     std::unordered_map<unsigned int, FontInfo*> Fonts;
-}; 
+
+    static FontBank instance;
+};
+
+inline FontBank FontBank::instance;

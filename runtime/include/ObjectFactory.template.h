@@ -27,11 +27,15 @@
 class ObjectFactory {
 public:
     static ObjectFactory& Instance() {
-        static ObjectFactory instance;
         return instance;
     }
 
     ObjectInstance* CreateInstance(unsigned int handle);
 
     {{ OBJECT_INFO_FUNCTIONS_DEFINITIONS }}
-}; 
+
+private:
+    static ObjectFactory instance;
+};
+
+inline ObjectFactory ObjectFactory::instance;
